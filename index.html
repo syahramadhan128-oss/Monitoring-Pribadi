@@ -1,122 +1,129 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Keuangan Pribadi</title>
+  <title>Keuangan Pribadi</title>
 
-<style>
-*{
-  box-sizing:border-box;
-}
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-body{
-  font-family:Arial, sans-serif;
-  padding:15px;
-  background:#f4f4f4;
-  margin:0;
-}
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 15px;
+      background: #f4f4f4;
+    }
 
-.card{
-  background:white;
-  max-width:500px;
-  margin:auto;
-  padding:20px;
-  border-radius:15px;
-  box-shadow:0 2px 10px rgba(0,0,0,0.1);
-}
+    .card {
+      background: white;
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
 
-h2{
-  text-align:center;
-  color:#16a34a;
-}
+    h2 {
+      text-align: center;
+      color: #16a34a;
+    }
 
-input,
-select,
-button{
-  width:100%;
-  padding:14px;
-  margin-top:10px;
-  border-radius:8px;
-  border:1px solid #ddd;
-  font-size:16px;
-}
+    input,
+    select,
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 16px;
+    }
 
-button{
-  background:#16a34a;
-  color:white;
-  border:none;
-  cursor:pointer;
-}
-</style>
+    button {
+      background: #16a34a;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #15803d;
+    }
+  </style>
 
 </head>
 
 <body>
 
-<div class="card">
+  <div class="card">
 
-<h2>💰 Keuangan Pribadi</h2>
+    <h2>💰 Keuangan Pribadi</h2>
 
-<input type="date" id="tanggal">
+    <input type="date" id="tanggal">
 
-<select id="jenis">
-  <option value="Masuk">Masuk</option>
-  <option value="Keluar">Keluar</option>
-</select>
+    <select id="jenis">
+      <option value="Masuk">Masuk</option>
+      <option value="Keluar">Keluar</option>
+    </select>
 
-<input type="text" id="kategori" placeholder="Kategori">
+    <input type="text" id="kategori" placeholder="Kategori">
 
-<input type="text" id="deskripsi" placeholder="Deskripsi">
+    <input type="text" id="deskripsi" placeholder="Deskripsi">
 
-<input type="number" id="nominal" placeholder="Nominal">
+    <input type="number" id="nominal" placeholder="Nominal">
 
-<button onclick="simpan()">
-Simpan
-</button>
+    <button onclick="simpan()">
+      Simpan
+    </button>
 
-</div>
+  </div>
 
-<script>
+  <script>
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
 
-async function simpan(){
+    async function simpan() {
 
-  const data = {
-    tanggal: document.getElementById("tanggal").value,
-    jenis: document.getElementById("jenis").value,
-    kategori: document.getElementById("kategori").value,
-    deskripsi: document.getElementById("deskripsi").value,
-    nominal: document.getElementById("nominal").value
-  };
+      const data = {
+        tanggal: document.getElementById("tanggal").value,
+        jenis: document.getElementById("jenis").value,
+        kategori: document.getElementById("kategori").value,
+        deskripsi: document.getElementById("deskripsi").value,
+        nominal: document.getElementById("nominal").value
+      };
 
-  try {
+      try {
 
-    const response = await fetch(API_URL,{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify(data)
-    });
+        await fetch(API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
+        });
 
-    const result = await response.json();
+        alert("Data berhasil dikirim");
 
-    if(result.success){
-      alert("Data berhasil disimpan");
-    }else{
-      alert("Gagal menyimpan data");
+        document.getElementById("kategori").value = "";
+        document.getElementById("deskripsi").value = "";
+        document.getElementById("nominal").value = "";
+
+      } catch (err) {
+
+        alert("Error : " + err.message);
+
+      }
+
     }
 
-  } catch(err) {
-    alert("Error : " + err.message);
-  }
-
-}
-
-</script>
+  </script>
 
 </body>
+
 </html>

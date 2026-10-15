@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Keuangan Pribadi</title>
+
+<link rel="manifest" href="manifest.json">
+
+<meta name="theme-color" content="#16a34a">
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body*
+  font-family:Arial;
+  padding:15*x;
+  background:#f4f4f4;
+  margin:*;
+}
+
+.card{
+  background:white;
+* max*width:500px;
+  margin:auto;
+  padd*ng:20px;
+  border*radius:15px;
+  box*shadow:0 *px 10px rgba(0,0*0,.1);
+}
+
+h2{
+  text*align:center;
+  color:#16a34a;
+}
+
+*nput,
+select,
+*utton{
+  width:100%;
+  padding*14px;
+  margin-top:10px;
+* border-radius:8px;
+  border*1px solid #ddd;
+ *font*size:16px;
+}
+
+button{
+  background*#16a34a;
+  color:white;
+* border:none;
+}
+
+*/style>
+</head>
+
+<body*
+
+<div class*"card">
+
+<h2>💰 Keuangan Pribadi</*2>
+
+<input type*"date" id="tanggal*>
+
+<select id="jenis">
+  <option v*lue="Masuk">Masuk</option>
+  <opti*n value="Keluar">Keluar</option>
+<*select>
+
+<input type="text" id="ka*egori" placeholder="Kategori*>
+
+<input type="text" id="*eskripsi" placeholder="Deskripsi">*
+<input type*"number" id="nominal" placeholder=*Nominal">
+
+<button onclick="simpan*)">
+Simpan
+</button>
+
+</div>
+
+<scr*pt>
+
+const API_URL =
+"https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
+
+async function simpan(){
+
+ *const data = {
+    tanggal* document.getElementById("tanggal"*.value,
+    jenis: document.getEle*entById("jenis").value,
+   *kategori* document.getElementById("kategori*).value,
+    deskripsi: document.g*tElementById("deskripsi").value,
+ *  nominal* document.getElementById("nominal"*.value
+  };
+
+  try{
+
+    const res*onse = await fetch(API_URL,{
+     *method:"POST",
+      headers:{
+   *    "Content-Type":"application/js*n"
+      },
+      body:JSON.string*fy(data)
+    });
+
+    const result*= await response.json();
+
+    if(r*sult.success){
+
+      alert("Data *erhasil disimpan");
+
+      documen*.getElementById("kategori").value=*";
+      document.getElementById("*eskripsi").value="";
+      documen*.getElementById("nominal").value="*;
+
+    }else{
+
+      alert("Gagal *enyimpan data");
+
+    }
+
+  }catch(*rr){
+
+    alert("Error: " + err.me*sage);
+
+  }
+
+}
+
+if('serviceWorker'*in navigator){
+  navigator*serviceWorker.register('./sw.js');*}
+
+</script>
+
+</body>
+</*tml>

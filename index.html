@@ -87,40 +87,41 @@
 
     const API_URL = "https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
 
-    async function simpan() {
+    
+async function simpan() {
+  const data = {
+    tanggal: document.getElementById("tanggal").value,
+    jenis: document.getElementById("jenis").value,
+    kategori: document.getElementById("kategori").value.trim(),
+    deskripsi: document.getElementById("deskripsi").value.trim(),
+    nominal: document.getElementById("nominal").value
+  };
 
-      const data = {
-        tanggal: document.getElementById("tanggal").value,
-        jenis: document.getElementById("jenis").value,
-        kategori: document.getElementById("kategori").value,
-        deskripsi: document.getElementById("deskripsi").value,
-        nominal: document.getElementById("nominal").value
-      };
+  if (!data.tanggal || !data.nominal || Number(data.nominal) <= 0) {
+    alert("Silakan isi tanggal dan nominal dengan benar.");
+    return;
+  }
 
-      try {
+  const tombol = document.querySelector("button");
+  tombol.disabled = true;
+  tombol.textContent = "Mengirim...";
 
-        await fetch(API_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(data)
-        });
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      mode: "no-cors",
+      body: new URLSearchParams(data)
+    });
 
-        alert("Data berhasil dikirim");
+    alert("Permintaan dikirim. Periksa Google Sheets untuk memastikan data tersimpan.");
 
-        document.getElementById("kategori").value = "";
-        document.getElementById("deskripsi").value = "";
-        document.getElementById("nominal").value = "";
-
-      } catch (err) {
-
-        alert("Error : " + err.message);
-
-      }
-
-    }
+  } catch (err) {
+    alert("Gagal mengirim: " + err.message);
+  } finally {
+    tombol.disabled = false;
+    tombol.textContent = "Simpan";
+  }
+}
 
   </script>
 

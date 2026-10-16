@@ -9,8 +9,6 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#16a34a">
 
-<meta name="description" content="Aplikasi Keuangan Pribadi">
-
 <style>
 *{
     margin:0;
@@ -27,22 +25,21 @@ body{
 .card{
     max-width:500px;
     margin:auto;
-    background:#ffffff;
-    border-radius:15px;
+    background:white;
     padding:20px;
-    box-shadow:0 4px 12px rgba(0,0,0,.1);
+    border-radius:16px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
 }
 
 h1{
     text-align:center;
     color:#16a34a;
-    margin-bottom:10px;
 }
 
 .subtitle{
     text-align:center;
+    margin:10px 0 20px;
     color:#666;
-    margin-bottom:20px;
 }
 
 label{
@@ -56,7 +53,7 @@ input,
 select{
     width:100%;
     padding:12px;
-    border:1px solid #d1d5db;
+    border:1px solid #ccc;
     border-radius:8px;
     font-size:16px;
 }
@@ -74,22 +71,18 @@ button{
     cursor:pointer;
 }
 
-button:hover{
-    background:#15803d;
-}
-
 button:disabled{
-    background:#9ca3af;
+    background:#999;
 }
 
-.status{
-    text-align:center;
+#status{
     margin-top:15px;
+    text-align:center;
     font-weight:bold;
 }
 </style>
-
 </head>
+
 <body>
 
 <div class="card">
@@ -112,23 +105,13 @@ Catat pemasukan dan pengeluaran harian
 </select>
 
 <label>Kategori</label>
-<input
-type="text"
-id="kategori"
-placeholder="Contoh: Gaji, Makan, BBM">
+<input type="text" id="kategori">
 
 <label>Deskripsi</label>
-<input
-type="text"
-id="deskripsi"
-placeholder="Keterangan transaksi">
+<input type="text" id="deskripsi">
 
 <label>Nominal (Rp)</label>
-<input
-type="number"
-id="nominal"
-placeholder="50000"
-required>
+<input type="number" id="nominal" required>
 
 <button type="submit" id="btnSimpan">
 Simpan Transaksi
@@ -136,28 +119,25 @@ Simpan Transaksi
 
 </form>
 
-<div id="status" class="status"></div>
+<div id="status"></div>
 
 </div>
 
 <script>
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
+const API_URL =
+"https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
 
 document.getElementById("tanggal").value =
 new Date().toISOString().split("T")[0];
 
-document
-.getElementById("formKeuangan")
-.addEventListener("submit", async function(e){
+document.getElementById("formKeuangan")
+.addEventListener("submit", async (e) => {
 
 e.preventDefault();
 
-const btn =
-document.getElementById("btnSimpan");
-
-const status =
-document.getElementById("status");
+const btn = document.getElementById("btnSimpan");
+const status = document.getElementById("status");
 
 btn.disabled = true;
 btn.textContent = "Mengirim...";
@@ -170,27 +150,27 @@ deskripsi: document.getElementById("deskripsi").value,
 nominal: document.getElementById("nominal").value
 };
 
-try {
+try{
 
 await fetch(API_URL,{
 method:"POST",
+mode:"no-cors",
 headers:{
-"Content-Type":"application/json"
+"Content-Type":"text/plain"
 },
-body:JSON.stringify(data)
+body: JSON.stringify(data)
 });
 
 status.innerHTML =
-"✅ Data berhasil dikirim";
+"✅ Data berhasil dikirim. Silakan cek Google Spreadsheet.";
 
-document.getElementById("kategori").value="";
-document.getElementById("deskripsi").value="";
-document.getElementById("nominal").value="";
+document.getElementById("kategori").value = "";
+document.getElementById("deskripsi").value = "";
+document.getElementById("nominal").value = "";
 
-}
-catch(err){
+}catch(error){
 
-console.error(err);
+console.error(error);
 
 status.innerHTML =
 "❌ Gagal mengirim data";
@@ -202,7 +182,7 @@ btn.textContent = "Simpan Transaksi";
 
 });
 
-if ("serviceWorker" in navigator) {
+if("serviceWorker" in navigator){
 window.addEventListener("load", () => {
 navigator.serviceWorker.register("./sw.js");
 });

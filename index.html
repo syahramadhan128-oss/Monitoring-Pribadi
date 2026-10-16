@@ -6,27 +6,191 @@
 
   <title>Keuangan Pribadi</title>
 
-  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#16a34a">
 
   <meta name="description"
-        content="Aplikasi untuk mencatat dan memantau pemasukan serta pengeluaran keuangan pribadi.">
+        content="Aplikasi untuk mencatat pemasukan dan pengeluaran pribadi.">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+      background: #f0fdf4;
+    }
+
+    .card {
+      max-width: 500px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 3px 10px rgba(0,0,0,.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #16a34a;
+      margin-top: 0;
+    }
+
+    p {
+      text-align: center;
+      color: #666;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #16a34a;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #9ca3af;
+    }
+
+    .status {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 14px;
+      color: #16a34a;
+    }
+  </style>
 </head>
 
 <body>
 
-  <h1>Keuangan Pribadi</h1>
+<div class="card">
 
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js")
-          .then(() => console.log("Service Worker berhasil didaftarkan"))
-          .catch(err => console.error(err));
-      });
-    }
-  </script>
+  <h1>💰 Keuangan Pribadi</h1>
+
+  <p>Catat pemasukan dan pengeluaran harian Anda</p>
+
+  <form id="formKeuangan">
+
+    <label>Tanggal</label>
+    <input type="date" id="tanggal" required>
+
+    <label>Jenis Transaksi</label>
+    <select id="jenis" required>
+      <option value="Masuk">Pemasukan</option>
+      <option value="Keluar">Pengeluaran</option>
+    </select>
+
+    <label>Kategori</label>
+    <input type="text"
+           id="kategori"
+           placeholder="Contoh: Gaji, Makan, BBM">
+
+    <label>Deskripsi</label>
+    <input type="text"
+           id="deskripsi"
+           placeholder="Keterangan transaksi">
+
+    <label>Nominal (Rp)</label>
+    <input type="number"
+           id="nominal"
+           required>
+
+    <button type="submit" id="btnSimpan">
+      Simpan Transaksi
+    </button>
+
+  </form>
+
+  <div class="status" id="status"></div>
+
+</div>
+
+<script>
+
+const API_URL =
+"https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
+
+document.getElementById("tanggal").value =
+new Date().toISOString().split("T")[0];
+
+document.getElementById("formKeuangan")
+.addEventListener("submit", async function(e){
+
+  e.preventDefault();
+
+  const btn =
+  document.getElementById("btnSimpan");
+
+  const status =
+  document.getElementById("status");
+
+  btn.disabled = true;
+  btn.textContent = "Mengirim...";
+
+  const data = {
+    tanggal: document.getElementById("tanggal").value,
+    jenis: document.getElementById("jenis").value,
+    kategori: document.getElementById("kategori").value,
+    deskripsi: document.getElementById("deskripsi").value,
+    nominal: document.getElementById("nominal").value
+  };
+
+  try {
+
+    await fetch(API_URL,{
+      method:"POST",
+      mode:"no-cors",
+      body: JSON.stringify(data)
+    });
+
+    status.innerHTML = "✅ Data berhasil dikirim";
+
+    document.getElementById("kategori").value = "";
+    document.getElementById("deskripsi").value = "";
+    document.getElementById("nominal").value = "";
+
+  } catch(err){
+
+    status.innerHTML = "❌ Gagal mengirim data";
+
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Simpan Transaksi";
+
+});
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js");
+  });
+}
+
+</script>
 
 </body>
 </html>

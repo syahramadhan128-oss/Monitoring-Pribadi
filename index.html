@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="id">
 
@@ -7,6 +8,11 @@
 
   <title>Keuangan Pribadi</title>
 
+  <!-- Pengaturan PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#16a34a">
+  <meta name="description" content="Aplikasi untuk mencatat pemasukan dan pengeluaran pribadi.">
+
   <style>
     * {
       box-sizing: border-box;
@@ -15,116 +21,221 @@
     body {
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 15px;
-      background: #f4f4f4;
+      padding: 20px 15px;
+      background: #f0fdf4;
+      color: #1f2937;
     }
 
     .card {
       background: white;
+      width: 100%;
       max-width: 500px;
-      margin: auto;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin: 20px auto;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     }
 
     h2 {
       text-align: center;
       color: #16a34a;
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 14px;
     }
 
     input,
-    select,
-    button {
+    select {
+      display: block;
       width: 100%;
-      padding: 14px;
-      margin-top: 10px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
+      padding: 13px;
+      margin-top: 7px;
+      border: 1px solid #d1d5db;
+      border-radius: 9px;
       font-size: 16px;
+      background: white;
+    }
+
+    input:focus,
+    select:focus {
+      outline: 2px solid #86efac;
+      border-color: #16a34a;
     }
 
     button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 24px;
+      border: none;
+      border-radius: 9px;
       background: #16a34a;
       color: white;
-      border: none;
+      font-size: 16px;
+      font-weight: bold;
       cursor: pointer;
     }
 
     button:hover {
       background: #15803d;
     }
-  </style>
 
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    .note {
+      margin-top: 18px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #6b7280;
+      text-align: center;
+    }
+  </style>
 </head>
 
 <body>
 
-  <div class="card">
-
+  <main class="card">
     <h2>💰 Keuangan Pribadi</h2>
+    <p class="subtitle">Catat pemasukan dan pengeluaran Anda</p>
 
-    <input type="date" id="tanggal">
+    <form id="formKeuangan">
+      <label for="tanggal">Tanggal transaksi</label>
+      <input type="date" id="tanggal" required>
 
-    <select id="jenis">
-      <option value="Masuk">Masuk</option>
-      <option value="Keluar">Keluar</option>
-    </select>
+      <label for="jenis">Jenis transaksi</label>
+      <select id="jenis" required>
+        <option value="Masuk">Pemasukan</option>
+        <option value="Keluar">Pengeluaran</option>
+      </select>
 
-    <input type="text" id="kategori" placeholder="Kategori">
+      <label for="kategori">Kategori</label>
+      <input
+        type="text"
+        id="kategori"
+        placeholder="Contoh: Gaji, Makanan, Transportasi"
+      >
 
-    <input type="text" id="deskripsi" placeholder="Deskripsi">
+      <label for="deskripsi">Deskripsi</label>
+      <input
+        type="text"
+        id="deskripsi"
+        placeholder="Keterangan transaksi"
+      >
 
-    <input type="number" id="nominal" placeholder="Nominal">
+      <label for="nominal">Nominal (Rp)</label>
+      <input
+        type="number"
+        id="nominal"
+        placeholder="Contoh: 50000"
+        min="1"
+        step="1"
+        inputmode="numeric"
+        required
+      >
 
-    <button onclick="simpan()">
-      Simpan
-    </button>
+      <button type="submit" id="tombolSimpan">
+        Simpan Transaksi
+      </button>
+    </form>
 
-  </div>
+    <p class="note">
+      Pastikan tanggal dan nominal sudah benar.
+      Setelah mengirim, periksa Google Sheets untuk memastikan
+      transaksi berhasil tersimpan.
+    </p>
+  </main>
 
   <script>
+    const API_URL =
+      "https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
 
-    const API_URL = "https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
+    // Isi tanggal dengan tanggal hari ini.
+    document.getElementById("tanggal").value =
+      new Date().getFullYear() + "-" +
+      String(new Date().getMonth() + 1).padStart(2, "0") + "-" +
+      String(new Date().getDate()).padStart(2, "0");
 
-    
-async function simpan() {
-  const data = {
-    tanggal: document.getElementById("tanggal").value,
-    jenis: document.getElementById("jenis").value,
-    kategori: document.getElementById("kategori").value.trim(),
-    deskripsi: document.getElementById("deskripsi").value.trim(),
-    nominal: document.getElementById("nominal").value
-  };
+    // Kirim data transaksi ke Google Apps Script.
+    document.getElementById("formKeuangan")
+      .addEventListener("submit", async function (event) {
+        event.preventDefault();
 
-  if (!data.tanggal || !data.nominal || Number(data.nominal) <= 0) {
-    alert("Silakan isi tanggal dan nominal dengan benar.");
-    return;
-  }
+        const data = {
+          tanggal: document.getElementById("tanggal").value,
+          jenis: document.getElementById("jenis").value,
+          kategori: document.getElementById("kategori").value.trim(),
+          deskripsi: document.getElementById("deskripsi").value.trim(),
+          nominal: document.getElementById("nominal").value
+        };
 
-  const tombol = document.querySelector("button");
-  tombol.disabled = true;
-  tombol.textContent = "Mengirim...";
+        if (
+          !data.tanggal ||
+          !data.nominal ||
+          !Number.isFinite(Number(data.nominal)) ||
+          Number(data.nominal) <= 0
+        ) {
+          alert("Silakan isi tanggal dan nominal dengan benar.");
+          return;
+        }
 
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      mode: "no-cors",
-      body: new URLSearchParams(data)
-    });
+        const tombol = document.getElementById("tombolSimpan");
+        tombol.disabled = true;
+        tombol.textContent = "Mengirim...";
 
-    alert("Permintaan dikirim. Periksa Google Sheets untuk memastikan data tersimpan.");
+        try {
+          await fetch(API_URL, {
+            method: "POST",
+            mode: "no-cors",
+            body: new URLSearchParams(data)
+          });
 
-  } catch (err) {
-    alert("Gagal mengirim: " + err.message);
-  } finally {
-    tombol.disabled = false;
-    tombol.textContent = "Simpan";
-  }
-}
+          alert(
+            "Permintaan telah dikirim. " +
+            "Silakan periksa Google Sheets untuk memastikan " +
+            "transaksi tersimpan."
+          );
 
+          document.getElementById("kategori").value = "";
+          document.getElementById("deskripsi").value = "";
+          document.getElementById("nominal").value = "";
+
+        } catch (error) {
+          alert(
+            "Tidak dapat mengirim permintaan. " +
+            "Periksa koneksi internet Anda, lalu coba lagi."
+          );
+        } finally {
+          tombol.disabled = false;
+          tombol.textContent = "Simpan Transaksi";
+        }
+      });
+
+    // Daftarkan service worker untuk PWA.
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./sw.js")
+          .catch(function (error) {
+            console.error("Service worker gagal didaftarkan:", error);
+          });
+      });
+    }
   </script>
 
 </body>
-
 </html>
+```

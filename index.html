@@ -1,182 +1,211 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Keuangan Pribadi</title>
+<title>Keuangan Pribadi</title>
 
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#16a34a">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#16a34a">
 
-    <style>
-        *{
-            box-sizing:border-box;
-            margin:0;
-            padding:0;
-        }
+<meta name="description" content="Aplikasi Keuangan Pribadi">
 
-        body{
-            font-family:Arial,sans-serif;
-            background:#f0fdf4;
-            padding:15px;
-        }
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
-        .container{
-            max-width:500px;
-            margin:auto;
-            background:#fff;
-            padding:20px;
-            border-radius:15px;
-            box-shadow:0 4px 12px rgba(0,0,0,0.1);
-        }
+body{
+    font-family:Arial,sans-serif;
+    background:#f0fdf4;
+    padding:15px;
+}
 
-        h1{
-            text-align:center;
-            color:#16a34a;
-            margin-bottom:10px;
-        }
+.card{
+    max-width:500px;
+    margin:auto;
+    background:#ffffff;
+    border-radius:15px;
+    padding:20px;
+    box-shadow:0 4px 12px rgba(0,0,0,.1);
+}
 
-        p{
-            text-align:center;
-            margin-bottom:20px;
-            color:#666;
-        }
+h1{
+    text-align:center;
+    color:#16a34a;
+    margin-bottom:10px;
+}
 
-        label{
-            display:block;
-            margin-top:12px;
-            margin-bottom:5px;
-            font-weight:bold;
-        }
+.subtitle{
+    text-align:center;
+    color:#666;
+    margin-bottom:20px;
+}
 
-        input,
-        select{
-            width:100%;
-            padding:12px;
-            border:1px solid #ccc;
-            border-radius:8px;
-        }
+label{
+    display:block;
+    margin-top:12px;
+    margin-bottom:5px;
+    font-weight:bold;
+}
 
-        button{
-            width:100%;
-            margin-top:20px;
-            padding:14px;
-            border:none;
-            border-radius:8px;
-            background:#16a34a;
-            color:#fff;
-            font-size:16px;
-            cursor:pointer;
-        }
+input,
+select{
+    width:100%;
+    padding:12px;
+    border:1px solid #d1d5db;
+    border-radius:8px;
+    font-size:16px;
+}
 
-        button:disabled{
-            background:#999;
-        }
+button{
+    width:100%;
+    margin-top:20px;
+    padding:14px;
+    background:#16a34a;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
 
-        #status{
-            text-align:center;
-            margin-top:15px;
-            font-weight:bold;
-        }
-    </style>
+button:hover{
+    background:#15803d;
+}
+
+button:disabled{
+    background:#9ca3af;
+}
+
+.status{
+    text-align:center;
+    margin-top:15px;
+    font-weight:bold;
+}
+</style>
+
 </head>
 <body>
 
-<div class="container">
+<div class="card">
 
-    <h1>💰 Keuangan Pribadi</h1>
+<h1>💰 Keuangan Pribadi</h1>
 
-    <p>Catat pemasukan dan pengeluaran harian</p>
+<p class="subtitle">
+Catat pemasukan dan pengeluaran harian
+</p>
 
-    <form id="formKeuangan">
+<form id="formKeuangan">
 
-        <label>Tanggal</label>
-        <input type="date" id="tanggal" required>
+<label>Tanggal</label>
+<input type="date" id="tanggal" required>
 
-        <label>Jenis Transaksi</label>
-        <select id="jenis">
-            <option value="Masuk">Pemasukan</option>
-            <option value="Keluar">Pengeluaran</option>
-        </select>
+<label>Jenis Transaksi</label>
+<select id="jenis">
+<option value="Masuk">Pemasukan</option>
+<option value="Keluar">Pengeluaran</option>
+</select>
 
-        <label>Kategori</label>
-        <input type="text" id="kategori" placeholder="Contoh: Gaji">
+<label>Kategori</label>
+<input
+type="text"
+id="kategori"
+placeholder="Contoh: Gaji, Makan, BBM">
 
-        <label>Deskripsi</label>
-        <input type="text" id="deskripsi" placeholder="Keterangan">
+<label>Deskripsi</label>
+<input
+type="text"
+id="deskripsi"
+placeholder="Keterangan transaksi">
 
-        <label>Nominal (Rp)</label>
-        <input type="number" id="nominal" required>
+<label>Nominal (Rp)</label>
+<input
+type="number"
+id="nominal"
+placeholder="50000"
+required>
 
-        <button type="submit" id="btnSimpan">
-            Simpan Transaksi
-        </button>
+<button type="submit" id="btnSimpan">
+Simpan Transaksi
+</button>
 
-    </form>
+</form>
 
-    <div id="status"></div>
+<div id="status" class="status"></div>
 
 </div>
 
 <script>
 
-const API_URL =
-    "https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
 
 document.getElementById("tanggal").value =
 new Date().toISOString().split("T")[0];
 
-document.getElementById("formKeuangan")
+document
+.getElementById("formKeuangan")
 .addEventListener("submit", async function(e){
 
-    e.preventDefault();
+e.preventDefault();
 
-    const tombol = document.getElementById("btnSimpan");
-    const status = document.getElementById("status");
+const btn =
+document.getElementById("btnSimpan");
 
-    tombol.disabled = true;
-    tombol.textContent = "Mengirim...";
+const status =
+document.getElementById("status");
 
-    const data = {
-        tanggal: document.getElementById("tanggal").value,
-        jenis: document.getElementById("jenis").value,
-        kategori: document.getElementById("kategori").value,
-        deskripsi: document.getElementById("deskripsi").value,
-        nominal: document.getElementById("nominal").value
-    };
+btn.disabled = true;
+btn.textContent = "Mengirim...";
 
-    try {
+const data = {
+tanggal: document.getElementById("tanggal").value,
+jenis: document.getElementById("jenis").value,
+kategori: document.getElementById("kategori").value,
+deskripsi: document.getElementById("deskripsi").value,
+nominal: document.getElementById("nominal").value
+};
 
-        await fetch(API_URL,{
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify(data)
-        });
+try {
 
-        status.innerHTML = "✅ Data berhasil dikirim";
-
-        document.getElementById("kategori").value = "";
-        document.getElementById("deskripsi").value = "";
-        document.getElementById("nominal").value = "";
-
-    } catch(error){
-
-        console.error(error);
-        status.innerHTML = "❌ Gagal mengirim data";
-
-    }
-
-    tombol.disabled = false;
-    tombol.textContent = "Simpan Transaksi";
+await fetch(API_URL,{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify(data)
 });
 
-if("serviceWorker" in navigator){
-    window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js");
-    });
+status.innerHTML =
+"✅ Data berhasil dikirim";
+
+document.getElementById("kategori").value="";
+document.getElementById("deskripsi").value="";
+document.getElementById("nominal").value="";
+
+}
+catch(err){
+
+console.error(err);
+
+status.innerHTML =
+"❌ Gagal mengirim data";
+
+}
+
+btn.disabled = false;
+btn.textContent = "Simpan Transaksi";
+
+});
+
+if ("serviceWorker" in navigator) {
+window.addEventListener("load", () => {
+navigator.serviceWorker.register("./sw.js");
+});
 }
 
 </script>

@@ -6,8 +6,8 @@
 
   <title>Keuangan Pribadi</title>
 
+  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
-
   <meta name="theme-color" content="#16a34a">
 
   <meta name="description"
@@ -17,6 +17,16 @@
 <body>
 
   <h1>Keuangan Pribadi</h1>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js")
+          .then(() => console.log("Service Worker berhasil didaftarkan"))
+          .catch(err => console.error(err));
+      });
+    }
+  </script>
 
 </body>
 </html>

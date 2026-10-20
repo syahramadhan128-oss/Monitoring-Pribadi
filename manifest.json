@@ -1,13 +1,15 @@
 {
+  "id": "/Monitoring-Pribadi/",
   "name": "Keuangan Pribadi",
   "short_name": "Keuangan",
-  "description": "Aplikasi untuk mencatat dan memantau pemasukan serta pengeluaran keuangan pribadi.",
-  "start_url": "/Monitoring-Pribadi/",
+  "description": "Aplikasi untuk mencatat pemasukan, pengeluaran dan laporan keuangan pribadi.",
+  "start_url": "/Monitoring-Pribadi/index.html",
   "scope": "/Monitoring-Pribadi/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#ffffff",
+  "background_color": "#f0fdf4",
   "theme_color": "#16a34a",
+  "lang": "id-ID",
   "icons": [
     {
       "src": "/Monitoring-Pribadi/icon-192.png",

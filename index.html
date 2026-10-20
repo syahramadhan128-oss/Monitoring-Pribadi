@@ -9,6 +9,8 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#16a34a">
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 *{
     margin:0;
@@ -23,7 +25,7 @@ body{
 }
 
 .card{
-    max-width:600px;
+    max-width:700px;
     margin:auto;
     background:#fff;
     padding:20px;
@@ -73,6 +75,25 @@ h1{
     font-weight:bold;
 }
 
+.section{
+    background:#fff;
+    margin-top:15px;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.section h3{
+    margin-bottom:10px;
+    color:#333;
+}
+
+.summary-item{
+    display:flex;
+    justify-content:space-between;
+    margin:8px 0;
+}
+
 label{
     display:block;
     margin-top:12px;
@@ -100,12 +121,35 @@ button{
     cursor:pointer;
 }
 
+button:hover{
+    background:#15803d;
+}
+
 #status{
     margin-top:15px;
     text-align:center;
     font-weight:bold;
 }
+
+.health{
+    text-align:center;
+    font-size:32px;
+    font-weight:bold;
+    color:#16a34a;
+}
+
+.tx-item{
+    padding:10px;
+    margin-bottom:8px;
+    background:#f5f5f5;
+    border-radius:8px;
+}
+
+canvas{
+    max-height:300px;
+}
 </style>
+
 </head>
 <body>
 
@@ -136,6 +180,54 @@ Catat pemasukan dan pengeluaran harian
 
 </div>
 
+<div class="section">
+<h3>📅 Ringkasan Bulan Ini</h3>
+
+<div class="summary-item">
+<span>Pemasukan</span>
+<strong id="bulanMasuk">Rp 0</strong>
+</div>
+
+<div class="summary-item">
+<span>Pengeluaran</span>
+<strong id="bulanKeluar">Rp 0</strong>
+</div>
+
+<div class="summary-item">
+<span>Sisa</span>
+<strong id="bulanSisa">Rp 0</strong>
+</div>
+</div>
+
+<div class="section">
+<h3>🏆 Financial Health</h3>
+<div id="healthScore" class="health">
+100/100
+</div>
+</div>
+
+<div class="section">
+<h3>📊 Pengeluaran per Kategori</h3>
+<canvas id="expenseChart"></canvas>
+</div>
+
+<div class="section">
+<h3>💰 Pemasukan per Kategori</h3>
+<canvas id="incomeChart"></canvas>
+</div>
+
+<div class="section">
+<h3>🤖 Insight Bulan Ini</h3>
+<p id="insightBulanan">
+Belum ada data.
+</p>
+</div>
+
+<div class="section">
+<h3>📋 5 Transaksi Terakhir</h3>
+<div id="lastTransactions"></div>
+</div>
+
 <form id="formKeuangan">
 
 <label>Tanggal</label>
@@ -150,14 +242,14 @@ Catat pemasukan dan pengeluaran harian
 <label>Kategori</label>
 <select id="kategori">
 <option value="Tagihan Rumah">Tagihan Rumah</option>
-<option value="Kebutuhan Harian dan Bulanan">Kebutuhan Harian</option>
-<option value="Cicilan Rumah Kiramland">Rumah Kiramland</option>
+<option value="Kebutuhan Harian">Kebutuhan Harian</option>
+<option value="Cicilan Rumah">Cicilan Rumah</option>
 <option value="Keperluan Pribadi">Keperluan Pribadi</option>
-<option value="Keperluan Kendaraan">Kendaraan</option>
-<option value="Kesehatan/Medical">Medical</option>
-<option value="Keperluan Bayi">Baby Shop</option>
+<option value="Kendaraan">Kendaraan</option>
+<option value="Medical">Medical</option>
+<option value="Baby Shop">Baby Shop</option>
 <option value="Gaji">Gaji</option>
-<option value="Gaji">Income lain</option>
+<option value="Income Lain">Income Lain</option>
 </select>
 
 <label>Deskripsi</label>
@@ -166,8 +258,8 @@ Catat pemasukan dan pengeluaran harian
 <label>Nominal</label>
 <input type="number" id="nominal" required>
 
-<button type="submit" id="btnSimpan">
-Simpan Transaksi
+<button type="submit">
+💾 Simpan Transaksi
 </button>
 
 </form>
@@ -178,60 +270,181 @@ Simpan Transaksi
 
 <script>
 
-// GANTI DENGAN URL APPS SCRIPT TERBARU
-const API_URL = "https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
+const API_URL =
+"https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
+
+let expenseChart;
+let incomeChart;
 
 function formatRupiah(nilai){
-    return "Rp " + Number(nilai).toLocaleString("id-ID");
+    return "Rp " +
+    Number(nilai).toLocaleString("id-ID");
 }
 
 async function loadDashboard(){
 
     try{
 
-        console.log("Load Dashboard");
-        console.log("API:", API_URL);
-
         const response = await fetch(API_URL);
-
         const data = await response.json();
-
-        console.log("DATA:", data);
 
         let totalMasuk = 0;
         let totalKeluar = 0;
 
-        data.forEach(item => {
+        const kategoriMasuk = {};
+        const kategoriKeluar = {};
 
-            const nominal = Number(item.nominal) || 0;
+        data.forEach(item=>{
 
-            if(item.jenis === "Masuk"){
+            const nominal =
+            Number(item.nominal) || 0;
+
+            if(item.jenis==="Masuk"){
+
                 totalMasuk += nominal;
+
+                kategoriMasuk[item.kategori] =
+                (kategoriMasuk[item.kategori] || 0)
+                + nominal;
             }
 
-            if(item.jenis === "Keluar"){
+            if(item.jenis==="Keluar"){
+
                 totalKeluar += nominal;
+
+                kategoriKeluar[item.kategori] =
+                (kategoriKeluar[item.kategori] || 0)
+                + nominal;
             }
 
         });
 
-        document.getElementById("totalMasuk").innerText =
-            formatRupiah(totalMasuk);
-
-        document.getElementById("totalKeluar").innerText =
-            formatRupiah(totalKeluar);
+        const saldo =
+        totalMasuk-totalKeluar;
 
         document.getElementById("saldo").innerText =
-            formatRupiah(totalMasuk - totalKeluar);
+        formatRupiah(saldo);
 
-        document.getElementById("status").innerHTML = "";
+        document.getElementById("totalMasuk").innerText =
+        formatRupiah(totalMasuk);
+
+        document.getElementById("totalKeluar").innerText =
+        formatRupiah(totalKeluar);
+
+        document.getElementById("bulanMasuk").innerText =
+        formatRupiah(totalMasuk);
+
+        document.getElementById("bulanKeluar").innerText =
+        formatRupiah(totalKeluar);
+
+        document.getElementById("bulanSisa").innerText =
+        formatRupiah(saldo);
+
+        let score = 100;
+
+        const rasio =
+        totalMasuk > 0
+        ? (totalKeluar/totalMasuk)*100
+        : 0;
+
+        if(rasio>70) score-=20;
+        if(rasio>85) score-=20;
+        if(rasio>95) score-=20;
+
+        document.getElementById("healthScore")
+        .innerText = score + "/100";
+
+        let kategoriBesar = "";
+        let terbesar = 0;
+
+        Object.keys(kategoriKeluar)
+        .forEach(k=>{
+
+            if(kategoriKeluar[k] > terbesar){
+
+                terbesar =
+                kategoriKeluar[k];
+
+                kategoriBesar = k;
+            }
+
+        });
+
+        document.getElementById("insightBulanan")
+        .innerHTML = `
+        Pengeluaran terbesar berasal dari
+        <b>${kategoriBesar}</b>
+        sebesar
+        <b>${formatRupiah(terbesar)}</b>.
+        `;
+
+        const recent =
+        data.slice(-5).reverse();
+
+        document.getElementById(
+        "lastTransactions"
+        ).innerHTML = recent.map(item => `
+        <div class="tx-item">
+            <b>${item.kategori}</b><br>
+            ${item.jenis==="Masuk" ? "🟢" : "🔴"}
+            ${formatRupiah(item.nominal)}
+        </div>
+        `).join("");
+
+        if(expenseChart){
+            expenseChart.destroy();
+        }
+
+        expenseChart =
+        new Chart(
+        document.getElementById("expenseChart"),
+        {
+            type:"doughnut",
+            data:{
+                labels:Object.keys(kategoriKeluar),
+                datasets:[{
+                    data:Object.values(kategoriKeluar),
+                    backgroundColor:[
+                        "#ef4444",
+                        "#f97316",
+                        "#3b82f6",
+                        "#8b5cf6",
+                        "#10b981",
+                        "#facc15"
+                    ]
+                }]
+            }
+        });
+
+        if(incomeChart){
+            incomeChart.destroy();
+        }
+
+        incomeChart =
+        new Chart(
+        document.getElementById("incomeChart"),
+        {
+            type:"doughnut",
+            data:{
+                labels:Object.keys(kategoriMasuk),
+                datasets:[{
+                    data:Object.values(kategoriMasuk),
+                    backgroundColor:[
+                        "#16a34a",
+                        "#22c55e",
+                        "#84cc16",
+                        "#14b8a6",
+                        "#0ea5e9"
+                    ]
+                }]
+            }
+        });
 
     }catch(error){
 
-        console.error(error);
-
-        document.getElementById("status").innerHTML =
-            "❌ Dashboard gagal memuat data : " + error.message;
+        document.getElementById("status")
+        .innerHTML =
+        "❌ Dashboard gagal dimuat";
     }
 }
 
@@ -239,51 +452,69 @@ document.getElementById("tanggal").value =
 new Date().toISOString().split("T")[0];
 
 document.getElementById("formKeuangan")
-.addEventListener("submit", async function(e){
+.addEventListener("submit",
+async function(e){
 
-    e.preventDefault();
+e.preventDefault();
 
-    const payload = {
-        tanggal : document.getElementById("tanggal").value,
-        jenis : document.getElementById("jenis").value,
-        kategori : document.getElementById("kategori").value,
-        deskripsi : document.getElementById("deskripsi").value,
-        nominal : document.getElementById("nominal").value
-    };
+const payload = {
+    tanggal:
+    document.getElementByIdvalue,
 
-    try{
+    jenis:
+    document.getElementById(
+    "jenis").value,
 
-        await fetch(API_URL,{
-            method:"POST",
-            mode:"no-cors",
-            headers:{
-                "Content-Type":"text/plain"
-            },
-            body:JSON.stringify(payload)
-        });
+    kategori:
+    document.getElementById(
+    "kategori").value,
 
-        document.getElementById("status").innerHTML =
-            "✅ Data berhasil disimpan";
+    deskripsi:
+    document.getElementById(
+    "deskripsi").value,
 
-        document.getElementById("deskripsi").value = "";
-        document.getElementById("nominal").value = "";
+    nominal:
+    document.getElementById(
+    "nominal").value
+};
 
-        setTimeout(loadDashboard,2000);
+try{
 
-    }catch(error){
+    await fetch(API_URL,{
+        method:"POST",
+        mode:"no-cors",
+        headers:{
+            "Content-Type":"text/plain"
+        },
+        body:JSON.stringify(payload)
+    });
 
-        document.getElementById("status").innerHTML =
-            "❌ Gagal menyimpan data";
+    document.getElementById("status")
+    .innerHTML =
+    "✅ Data berhasil disimpan";
 
-        console.error(error);
-    }
+    document.getElementById(
+    "deskripsi").value="";
+
+    document.getElementById(
+    "nominal").value="";
+
+    setTimeout(loadDashboard,1500);
+
+}catch(err){
+
+    document.getElementById("status")
+    .innerHTML =
+    "❌ Gagal menyimpan data";
+}
 
 });
 
 loadDashboard();
 
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js");
+if("serviceWorker" in navigator){
+    navigator.serviceWorker
+    .register("./sw.js");
 }
 
 </script>

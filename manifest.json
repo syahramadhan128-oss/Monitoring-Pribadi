@@ -2,10 +2,14 @@
   "id": "/Monitoring-Pribadi/",
   "name": "Keuangan Pribadi",
   "short_name": "Keuangan",
-  "description": "Aplikasi untuk mencatat pemasukan, pengeluaran, laporan keuangan, target tabungan dan analisis keuangan pribadi.",
+  "description": "Aplikasi untuk mencatat pemasukan, pengeluaran, laporan keuangan, target tabungan, dan analisis keuangan pribadi.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
   "background_color": "#f0fdf4",
   "theme_color": "#16a34a",
@@ -31,24 +35,4 @@
   ],
   "shortcuts": [
     {
-      "name": "Dashboard",
-      "short_name": "Dashboard",
-      "url": "./index.html"
-    },
-    {
-      "name": "Tambah Transaksi",
-      "short_name": "Transaksi",
-      "url": "./transaksi.html"
-    },
-    {
-      "name": "Laporan",
-      "short_name": "Laporan",
-      "url": "./laporan.html"
-    },
-    {
-      "name": "Profil",
-      "short_name": "Profil",
-      "url": "./profil.html"
-    }
-  ]
-}
+      "name

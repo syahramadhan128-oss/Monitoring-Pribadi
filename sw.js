@@ -1,59 +1,41 @@
-const CACHE_NAME = "keuangan-v8";
+const CACHE_NAME = "keuangan-v10";
 
 const urlsToCache = [
-  "/Monitoring-Pribadi/",
-  "/Monitoring-Pribadi/index.html",
-  "/Monitoring-Pribadi/transaksi.html",
-  "/Monitoring-Pribadi/laporan.html",
-  "/Monitoring-Pribadi/profil.html",
-  "/Monitoring-Pribadi/manifest.json",
-  "/Monitoring-Pribadi/icon-192.png",
-  "/Monitoring-Pribadi/icon-512.png"
+  "./",
+  "./index.html",
+  "./transaksi.html",
+  "./laporan.html",
+  "./profil.html",
+  "./manifest.json",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
-// Install Service Worker
 self.addEventListener("install", event => {
-
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log("Cache berhasil dibuat");
-        return cache.addAll(urlsToCache);
-      })
+      .then(cache => cache.addAll(urlsToCache))
   );
 
   self.skipWaiting();
-
 });
 
-// Aktivasi Service Worker
 self.addEventListener("activate", event => {
-
   event.waitUntil(
-
-    caches.keys().then(cacheNames => {
-
+    caches.keys().then(keys => {
       return Promise.all(
-
-        cacheNames.map(cache => {
-
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
           }
-
         })
-
       );
-
     })
-
   );
 
   self.clients.claim();
-
 });
 
-// Fetch Request
 self.addEventListener("fetch", event => {
 
   if (event.request.method !== "GET") {
@@ -61,7 +43,6 @@ self.addEventListener("fetch", event => {
   }
 
   event.respondWith(
-
     caches.match(event.request)
       .then(response => {
 
@@ -69,9 +50,9 @@ self.addEventListener("fetch", event => {
           return response;
         }
 
-        return fetch(event.request)
-          .then(networkResponse => {
+        return fetch(event.request);
 
-            if (
-              !networkResponse ||
-            
+      })
+  );
+
+});

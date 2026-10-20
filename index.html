@@ -12,259 +12,238 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
+
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
 }
 
 body{
-    font-family:Arial,sans-serif;
-    background:#f0fdf4;
-    padding:15px;
+background:#f0fdf4;
+padding:15px;
+padding-bottom:90px;
+}
+
+.container{
+max-width:800px;
+margin:auto;
+}
+
+.header{
+text-align:center;
+margin-bottom:15px;
+}
+
+.header h1{
+color:#16a34a;
 }
 
 .card{
-    max-width:700px;
-    margin:auto;
-    background:#fff;
-    padding:20px;
-    border-radius:16px;
-    box-shadow:0 4px 12px rgba(0,0,0,.1);
+background:#fff;
+padding:15px;
+border-radius:15px;
+margin-bottom:15px;
+box-shadow:0 2px 8px rgba(0,0,0,.1);
 }
 
-h1{
-    text-align:center;
-    color:#16a34a;
-    margin-bottom:10px;
-}
-
-.subtitle{
-    text-align:center;
-    color:#666;
-    margin-bottom:20px;
-}
-
-.dashboard{
-    display:grid;
-    gap:10px;
-    margin-bottom:20px;
-}
-
-.box{
-    padding:15px;
-    border-radius:12px;
-    text-align:center;
-    color:#fff;
+.filter{
+width:100%;
+padding:12px;
+border:1px solid #ddd;
+border-radius:10px;
 }
 
 .saldo{
-    background:#16a34a;
+background:#16a34a;
+color:white;
+text-align:center;
+}
+
+.saldo h2{
+font-size:34px;
+margin-top:10px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+
+.box{
+padding:15px;
+border-radius:12px;
+text-align:center;
+color:white;
 }
 
 .masuk{
-    background:#2563eb;
+background:#2563eb;
 }
 
 .keluar{
-    background:#dc2626;
+background:#dc2626;
 }
 
 .box p{
-    font-size:26px;
-    font-weight:bold;
-}
-
-.section{
-    background:#fff;
-    margin-top:15px;
-    padding:15px;
-    border-radius:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-}
-
-.section h3{
-    margin-bottom:10px;
-    color:#333;
+font-size:22px;
+font-weight:bold;
+margin-top:5px;
 }
 
 .summary-item{
-    display:flex;
-    justify-content:space-between;
-    margin:8px 0;
-}
-
-label{
-    display:block;
-    margin-top:12px;
-    margin-bottom:5px;
-    font-weight:bold;
-}
-
-input,
-select{
-    width:100%;
-    padding:12px;
-    border:1px solid #ccc;
-    border-radius:8px;
-}
-
-button{
-    width:100%;
-    padding:14px;
-    margin-top:20px;
-    border:none;
-    border-radius:8px;
-    background:#16a34a;
-    color:white;
-    font-size:16px;
-    cursor:pointer;
-}
-
-button:hover{
-    background:#15803d;
-}
-
-#status{
-    margin-top:15px;
-    text-align:center;
-    font-weight:bold;
+display:flex;
+justify-content:space-between;
+margin:8px 0;
 }
 
 .health{
-    text-align:center;
-    font-size:32px;
-    font-weight:bold;
-    color:#16a34a;
+font-size:32px;
+font-weight:bold;
+text-align:center;
+color:#16a34a;
 }
 
-.tx-item{
-    padding:10px;
-    margin-bottom:8px;
-    background:#f5f5f5;
-    border-radius:8px;
+.tx{
+background:#f5f5f5;
+padding:10px;
+border-radius:8px;
+margin-bottom:8px;
+}
+
+.bottom-nav{
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+background:white;
+display:flex;
+justify-content:space-around;
+padding:12px;
+box-shadow:0 -2px 10px rgba(0,0,0,.1);
+}
+
+.bottom-nav a{
+text-decoration:none;
+color:#333;
+font-size:14px;
+text-align:center;
 }
 
 canvas{
-    max-height:300px;
+max-height:250px;
 }
-</style>
 
+</style>
 </head>
+
 <body>
 
-<div class="card">
+<div class="container">
 
+<div class="header">
 <h1>💰 Keuangan Pribadi</h1>
-
-<p class="subtitle">
-Catat pemasukan dan pengeluaran harian
-</p>
-
-<div class="dashboard">
-
-<div class="box saldo">
-<h3>💰 Saldo</h3>
-<p id="saldo">Rp 0</p>
+<p>Dashboard Keuangan</p>
 </div>
 
+<div class="card">
+<h3>📅 Filter Bulan</h3>
+<input type="month" id="filterBulan" class="filter">
+</div>
+
+<div class="card saldo">
+<h3>Saldo Saat Ini</h3>
+<h2 id="saldo">Rp 0</h2>
+</div>
+
+<div class="grid">
+
 <div class="box masuk">
-<h3>📈 Total Pemasukan</h3>
+<h4>Pemasukan</h4>
 <p id="totalMasuk">Rp 0</p>
 </div>
 
 <div class="box keluar">
-<h3>📉 Total Pengeluaran</h3>
+<h4>Pengeluaran</h4>
 <p id="totalKeluar">Rp 0</p>
 </div>
 
 </div>
 
-<div class="section">
-<h3>📅 Ringkasan Bulan Ini</h3>
+<div class="card">
+
+<h3>📅 Ringkasan Bulan</h3>
 
 <div class="summary-item">
 <span>Pemasukan</span>
-<strong id="bulanMasuk">Rp 0</strong>
+<b id="bulanMasuk">Rp 0</b>
 </div>
 
 <div class="summary-item">
 <span>Pengeluaran</span>
-<strong id="bulanKeluar">Rp 0</strong>
+<b id="bulanKeluar">Rp 0</b>
 </div>
 
 <div class="summary-item">
 <span>Sisa</span>
-<strong id="bulanSisa">Rp 0</strong>
-</div>
+<b id="bulanSisa">Rp 0</b>
 </div>
 
-<div class="section">
-<h3>🏆 Financial Health</h3>
+</div>
+
+<div class="card">
+
+<h3>🏆 Financial Health Score</h3>
+
 <div id="healthScore" class="health">
 100/100
 </div>
+
 </div>
 
-<div class="section">
-<h3>📊 Pengeluaran per Kategori</h3>
+<div class="card">
+
+<h3>📊 Pengeluaran Berdasarkan Kategori</h3>
+
 <canvas id="expenseChart"></canvas>
+
 </div>
 
-<div class="section">
-<h3>💰 Pemasukan per Kategori</h3>
-<canvas id="incomeChart"></canvas>
-</div>
+<div class="card">
 
-<div class="section">
-<h3>🤖 Insight Bulan Ini</h3>
+<h3>🤖 Insight Bulanan</h3>
+
 <p id="insightBulanan">
 Belum ada data.
 </p>
+
 </div>
 
-<div class="section">
+<div class="card">
+
 <h3>📋 5 Transaksi Terakhir</h3>
+
 <div id="lastTransactions"></div>
+
 </div>
 
-<form id="formKeuangan">
+</div>
 
-<label>Tanggal</label>
-<input type="date" id="tanggal" required>
+<div class="bottom-nav">
 
-<label>Jenis Transaksi</label>
-<select id="jenis">
-<option value="Masuk">Pemasukan</option>
-<option value="Keluar">Pengeluaran</option>
-</select>
+<a href="index.html">
+🏠<br>Dashboard
+</a>
 
-<label>Kategori</label>
-<select id="kategori">
-<option value="Tagihan Rumah">Tagihan Rumah</option>
-<option value="Kebutuhan Harian">Kebutuhan Harian</option>
-<option value="Cicilan Rumah">Cicilan Rumah</option>
-<option value="Keperluan Pribadi">Keperluan Pribadi</option>
-<option value="Kendaraan">Kendaraan</option>
-<option value="Medical">Medical</option>
-<option value="Baby Shop">Baby Shop</option>
-<option value="Gaji">Gaji</option>
-<option value="Income Lain">Income Lain</option>
-</select>
+<a href="transaksi.html">
+➕<br>Transaksi
+</a>
 
-<label>Deskripsi</label>
-<input type="text" id="deskripsi">
-
-<label>Nominal</label>
-<input type="number" id="nominal" required>
-
-<button type="submit">
-💾 Simpan Transaksi
-</button>
-
-</form>
-
-<div id="status"></div>
+<a href="laporan.html">
+📊<br>Laporan
+</a>
 
 </div>
 
@@ -274,250 +253,129 @@ const API_URL =
 "https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
 
 let expenseChart;
-let incomeChart;
 
-function formatRupiah(nilai){
-    return "Rp " +
-    Number(nilai).toLocaleString("id-ID");
+function rupiah(nilai){
+return "Rp " +
+Number(nilai).toLocaleString("id-ID");
+}
+
+function setDefaultMonth(){
+
+const today = new Date();
+
+const bulan =
+String(today.getMonth()+1)
+.padStart(2,"0");
+
+document.getElementById(
+"filterBulan"
+).value =
+`${today.getFullYear()}-${bulan}`;
+
 }
 
 async function loadDashboard(){
 
-    try{
-
-        const response = await fetch(API_URL);
-        const data = await response.json();
-
-        let totalMasuk = 0;
-        let totalKeluar = 0;
-
-        const kategoriMasuk = {};
-        const kategoriKeluar = {};
-
-        data.forEach(item=>{
-
-            const nominal =
-            Number(item.nominal) || 0;
-
-            if(item.jenis==="Masuk"){
-
-                totalMasuk += nominal;
-
-                kategoriMasuk[item.kategori] =
-                (kategoriMasuk[item.kategori] || 0)
-                + nominal;
-            }
-
-            if(item.jenis==="Keluar"){
-
-                totalKeluar += nominal;
-
-                kategoriKeluar[item.kategori] =
-                (kategoriKeluar[item.kategori] || 0)
-                + nominal;
-            }
-
-        });
-
-        const saldo =
-        totalMasuk-totalKeluar;
-
-        document.getElementById("saldo").innerText =
-        formatRupiah(saldo);
-
-        document.getElementById("totalMasuk").innerText =
-        formatRupiah(totalMasuk);
-
-        document.getElementById("totalKeluar").innerText =
-        formatRupiah(totalKeluar);
-
-        document.getElementById("bulanMasuk").innerText =
-        formatRupiah(totalMasuk);
-
-        document.getElementById("bulanKeluar").innerText =
-        formatRupiah(totalKeluar);
-
-        document.getElementById("bulanSisa").innerText =
-        formatRupiah(saldo);
-
-        let score = 100;
-
-        const rasio =
-        totalMasuk > 0
-        ? (totalKeluar/totalMasuk)*100
-        : 0;
-
-        if(rasio>70) score-=20;
-        if(rasio>85) score-=20;
-        if(rasio>95) score-=20;
-
-        document.getElementById("healthScore")
-        .innerText = score + "/100";
-
-        let kategoriBesar = "";
-        let terbesar = 0;
-
-        Object.keys(kategoriKeluar)
-        .forEach(k=>{
-
-            if(kategoriKeluar[k] > terbesar){
-
-                terbesar =
-                kategoriKeluar[k];
-
-                kategoriBesar = k;
-            }
-
-        });
-
-        document.getElementById("insightBulanan")
-        .innerHTML = `
-        Pengeluaran terbesar berasal dari
-        <b>${kategoriBesar}</b>
-        sebesar
-        <b>${formatRupiah(terbesar)}</b>.
-        `;
-
-        const recent =
-        data.slice(-5).reverse();
-
-        document.getElementById(
-        "lastTransactions"
-        ).innerHTML = recent.map(item => `
-        <div class="tx-item">
-            <b>${item.kategori}</b><br>
-            ${item.jenis==="Masuk" ? "🟢" : "🔴"}
-            ${formatRupiah(item.nominal)}
-        </div>
-        `).join("");
-
-        if(expenseChart){
-            expenseChart.destroy();
-        }
-
-        expenseChart =
-        new Chart(
-        document.getElementById("expenseChart"),
-        {
-            type:"doughnut",
-            data:{
-                labels:Object.keys(kategoriKeluar),
-                datasets:[{
-                    data:Object.values(kategoriKeluar),
-                    backgroundColor:[
-                        "#ef4444",
-                        "#f97316",
-                        "#3b82f6",
-                        "#8b5cf6",
-                        "#10b981",
-                        "#facc15"
-                    ]
-                }]
-            }
-        });
-
-        if(incomeChart){
-            incomeChart.destroy();
-        }
-
-        incomeChart =
-        new Chart(
-        document.getElementById("incomeChart"),
-        {
-            type:"doughnut",
-            data:{
-                labels:Object.keys(kategoriMasuk),
-                datasets:[{
-                    data:Object.values(kategoriMasuk),
-                    backgroundColor:[
-                        "#16a34a",
-                        "#22c55e",
-                        "#84cc16",
-                        "#14b8a6",
-                        "#0ea5e9"
-                    ]
-                }]
-            }
-        });
-
-    }catch(error){
-
-        document.getElementById("status")
-        .innerHTML =
-        "❌ Dashboard gagal dimuat";
-    }
-}
-
-document.getElementById("tanggal").value =
-new Date().toISOString().split("T")[0];
-
-document.getElementById("formKeuangan")
-.addEventListener("submit",
-async function(e){
-
-e.preventDefault();
-
-const payload = {
-    tanggal:
-    document.getElementByIdvalue,
-
-    jenis:
-    document.getElementById(
-    "jenis").value,
-
-    kategori:
-    document.getElementById(
-    "kategori").value,
-
-    deskripsi:
-    document.getElementById(
-    "deskripsi").value,
-
-    nominal:
-    document.getElementById(
-    "nominal").value
-};
-
 try{
 
-    await fetch(API_URL,{
-        method:"POST",
-        mode:"no-cors",
-        headers:{
-            "Content-Type":"text/plain"
-        },
-        body:JSON.stringify(payload)
-    });
+const res =
+await fetch(API_URL);
 
-    document.getElementById("status")
-    .innerHTML =
-    "✅ Data berhasil disimpan";
+const data =
+await res.json();
 
-    document.getElementById(
-    "deskripsi").value="";
+const filter =
+document.getElementById(
+"filterBulan"
+).value;
 
-    document.getElementById(
-    "nominal").value="";
+const [tahun,bulan] =
+filter.split("-");
 
-    setTimeout(loadDashboard,1500);
+const filtered =
+data.filter(item=>{
 
-}catch(err){
+const t =
+new Date(item.tanggal);
 
-    document.getElementById("status")
-    .innerHTML =
-    "❌ Gagal menyimpan data";
+const b =
+String(t.getMonth()+1)
+.padStart(2,"0");
+
+const y =
+String(t.getFullYear());
+
+return (
+b===bulan &&
+y===tahun
+);
+
+});
+
+let masuk = 0;
+let keluar = 0;
+
+const kategori = {};
+
+filtered.forEach(item=>{
+
+const nominal =
+Number(item.nominal)||0;
+
+if(item.jenis === "Masuk"){
+
+masuk += nominal;
+
+}
+
+if(item.jenis === "Keluar"){
+
+keluar += nominal;
+
+kategori[item.kategori] =
+(kategori[item.kategori]||0)
++ nominal;
+
 }
 
 });
 
-loadDashboard();
+const saldo =
+masuk-keluar;
 
-if("serviceWorker" in navigator){
-    navigator.serviceWorker
-    .register("./sw.js");
-}
+document.getElementById(
+"saldo"
+).innerText = rupiah(saldo);
 
-</script>
+document.getElementById(
+"totalMasuk"
+).innerText = rupiah(masuk);
 
-</body>
-</html>
+document.getElementById(
+"totalKeluar"
+).innerText = rupiah(keluar);
+
+document.getElementById(
+"bulanMasuk"
+).innerText = rupiah(masuk);
+
+document.getElementById(
+"bulanKeluar"
+).innerText = rupiah(keluar);
+
+document.getElementById(
+"bulanSisa"
+).innerText = rupiah(saldo);
+
+let rasio =
+masuk > 0
+?
+(keluar/masuk)*100
+:
+0;
+
+let score = 100;
+
+if(rasio>70) score-=20;
+if(rasio>85) score-=20;
+if(rasio>95) 

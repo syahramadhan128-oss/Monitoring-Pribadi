@@ -6,10 +6,6 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "display_override": [
-    "standalone",
-    "minimal-ui"
-  ],
   "orientation": "portrait",
   "background_color": "#f0fdf4",
   "theme_color": "#16a34a",
@@ -32,7 +28,5 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "shortcuts": [
-    {
-      "name
+  ]
+}

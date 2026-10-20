@@ -94,4 +94,428 @@ background:#16a34a;
 background:#f5f5f5;
 padding:10px;
 border-radius:8px;
-margin-bottom:8px
+margin-bottom:8px;
+}
+
+.insight{
+line-height:1.8;
+}
+
+.bottom-nav{
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+z-index:9999;
+background:#fff;
+display:flex;
+justify-content:space-around;
+align-items:center;
+padding:12px;
+padding-bottom:max(12px, env(safe-area-inset-bottom));
+box-shadow:0 -2px 10px rgba(0,0,0,.1);
+}
+
+.bottom-nav a{
+text-decoration:none;
+text-align:center;
+font-size:14px;
+color:#333;
+}
+
+.active{
+color:#16a34a !important;
+font-weight:bold;
+}
+
+canvas{
+max-height:280px;
+}
+
+@media(max-width:600px){
+
+.summary-grid{
+grid-template-columns:1fr;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+<h1>📊 Laporan Keuangan</h1>
+<p>Analisa Keuangan Bulanan</p>
+</div>
+
+<div class="card">
+
+<h3>📅 Filter Bulan</h3>
+
+<input
+type="month"
+id="filterBulan"
+class="filter">
+
+</div>
+
+<div class="card">
+
+<h3>💰 Ringkasan Bulanan</h3>
+
+<div class="summary-grid">
+
+<div class="summary masuk">
+<div>Pemasukan</div>
+<p id="totalMasuk">Rp 0</p>
+</div>
+
+<div class="summary keluar">
+<div>Pengeluaran</div>
+<p id="totalKeluar">Rp 0</p>
+</div>
+
+<div class="summary saldo">
+<div>Saldo</div>
+<p id="saldo">Rp 0</p>
+</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>📊 Pengeluaran per Kategori</h3>
+
+<canvas id="expenseChart"></canvas>
+
+</div>
+
+<div class="card">
+
+<h3>💰 Pemasukan per Kategori</h3>
+
+<canvas id="incomeChart"></canvas>
+
+</div>
+
+<div class="card">
+
+<h3>📈 Perbandingan Pemasukan vs Pengeluaran</h3>
+
+<canvas id="compareChart"></canvas>
+
+</div>
+
+<div class="card">
+
+<h3>🔥 Top 5 Pengeluaran Terbesar</h3>
+
+<div id="topExpense"></div>
+
+</div>
+
+<div class="card">
+
+<h3>🤖 Insight Otomatis</h3>
+
+<div id="insight" class="insight">
+Belum ada data.
+</div>
+
+</div>
+
+</div>
+
+<div class="bottom-nav">
+
+<a href="index.html">
+🏠<br>Dashboard
+</a>
+
+<a href="transaksi.html">
+➕<br>Transaksi
+</a>
+
+<a href="laporan.html" class="active">
+📊<br>Laporan
+</a>
+
+<a href="profil.html">
+⚙️<br>Profil
+</a>
+
+</div>
+
+<script>
+
+const API_URL =
+"https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
+
+let expenseChart;
+let incomeChart;
+let compareChart;
+
+function rupiah(nilai){
+return "Rp " +
+Number(nilai || 0).toLocaleString("id-ID");
+}
+
+function setCurrentMonth(){
+
+const now = new Date();
+
+const month =
+String(now.getMonth()+1)
+.padStart(2,"0");
+
+document.getElementById("filterBulan").value =
+`${now.getFullYear()}-${month}`;
+
+}
+
+async function loadReport(){
+
+try{
+
+const response =
+await fetch(API_URL);
+
+const data =
+await response.json();
+
+console.log("DATA API", data);
+
+const periode =
+document.getElementById("filterBulan").value;
+
+if(!periode){
+return;
+}
+
+const [tahun,bulan] =
+periode.split("-");
+
+const filtered =
+data.filter(item => {
+
+if(!item.tanggal) return false;
+
+const itemYear =
+item.tanggal.substring(0,4);
+
+const itemMonth =
+item.tanggal.substring(5,7);
+
+return (
+itemMonth === bulan &&
+itemYear === tahun
+);
+
+});
+
+console.log("FILTERED", filtered);
+
+let totalMasuk = 0;
+let totalKeluar = 0;
+
+const kategoriMasuk = {};
+const kategoriKeluar = {};
+
+filtered.forEach(item => {
+
+const nominal =
+Number(item.nominal) || 0;
+
+if(item.jenis === "Masuk"){
+
+totalMasuk += nominal;
+
+kategoriMasuk[item.kategori] =
+(kategoriMasuk[item.kategori] || 0)
++ nominal;
+
+}
+
+if(item.jenis === "Keluar"){
+
+totalKeluar += nominal;
+
+kategoriKeluar[item.kategori] =
+(kategoriKeluar[item.kategori] || 0)
++ nominal;
+
+}
+
+});
+
+const saldo =
+totalMasuk-totalKeluar;
+
+document.getElementById("totalMasuk")
+.innerText = rupiah(totalMasuk);
+
+document.getElementById("totalKeluar")
+.innerText = rupiah(totalKeluar);
+
+document.getElementById("saldo")
+.innerText = rupiah(saldo);
+
+if(expenseChart){
+expenseChart.destroy();
+}
+
+expenseChart = new Chart(
+document.getElementById("expenseChart"),
+{
+type:"doughnut",
+data:{
+labels:Object.keys(kategoriKeluar),
+datasets:[{
+data:Object.values(kategoriKeluar),
+backgroundColor:[
+"#ef4444",
+"#f97316",
+"#3b82f6",
+"#8b5cf6",
+"#10b981",
+"#e11d48"
+]
+}]
+}
+}
+);
+
+if(incomeChart){
+incomeChart.destroy();
+}
+
+incomeChart = new Chart(
+document.getElementById("incomeChart"),
+{
+type:"doughnut",
+data:{
+labels:Object.keys(kategoriMasuk),
+datasets:[{
+data:Object.values(kategoriMasuk),
+backgroundColor:[
+"#16a34a",
+"#22c55e",
+"#84cc16",
+"#14b8a6",
+"#0ea5e9"
+]
+}]
+}
+}
+);
+
+if(compareChart){
+compareChart.destroy();
+}
+
+compareChart = new Chart(
+document.getElementById("compareChart"),
+{
+type:"bar",
+data:{
+labels:["Pemasukan","Pengeluaran"],
+datasets:[{
+label:"Nominal",
+data:[
+totalMasuk,
+totalKeluar
+],
+backgroundColor:[
+"#2563eb",
+"#dc2626"
+]
+}]
+}
+}
+);
+
+const top5 =
+Object.entries(kategoriKeluar)
+.sort((a,b)=>b[1]-a[1])
+.slice(0,5);
+
+document.getElementById("topExpense")
+.innerHTML =
+top5.map(item => `
+<div class="top-item">
+<b>${item[0]}</b><br>
+${rupiah(item[1])}
+</div>
+`).join("");
+
+let kategoriTerbesar = "-";
+let nominalTerbesar = 0;
+
+top5.forEach(item => {
+
+if(item[1] > nominalTerbesar){
+
+nominalTerbesar = item[1];
+kategoriTerbesar = item[0];
+
+}
+
+});
+
+const rasio =
+totalMasuk > 0
+? ((totalKeluar / totalMasuk) * 100).toFixed(1)
+: 0;
+
+document.getElementById("insight")
+.innerHTML = `
+Pengeluaran terbesar berasal dari
+<b>${kategoriTerbesar}</b>
+dengan nilai
+<b>${rupiah(nominalTerbesar)}</b>.
+
+<br><br>
+
+Rasio pengeluaran terhadap pemasukan:
+<b>${rasio}%</b>
+
+<br><br>
+
+Saldo bulan ini:
+<b>${rupiah(saldo)}</b>
+`;
+
+}catch(error){
+
+console.error(error);
+
+}
+
+}
+
+setCurrentMonth();
+
+document
+.getElementById("filterBulan")
+.addEventListener(
+"change",
+loadReport
+);
+
+loadReport();
+
+if("serviceWorker" in navigator){
+navigator.serviceWorker.register("./sw.js");
+}
+
+</script>
+
+</body>
+</html>

@@ -23,23 +23,54 @@ body{
 }
 
 .card{
-    max-width:500px;
+    max-width:600px;
     margin:auto;
-    background:white;
+    background:#fff;
     padding:20px;
     border-radius:16px;
-    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    box-shadow:0 4px 12px rgba(0,0,0,.1);
 }
 
 h1{
     text-align:center;
     color:#16a34a;
+    margin-bottom:10px;
 }
 
 .subtitle{
     text-align:center;
-    margin:10px 0 20px;
     color:#666;
+    margin-bottom:20px;
+}
+
+.dashboard{
+    display:grid;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+.box{
+    padding:15px;
+    border-radius:12px;
+    text-align:center;
+    color:#fff;
+}
+
+.saldo{
+    background:#16a34a;
+}
+
+.masuk{
+    background:#2563eb;
+}
+
+.keluar{
+    background:#dc2626;
+}
+
+.box p{
+    font-size:26px;
+    font-weight:bold;
 }
 
 label{
@@ -55,24 +86,18 @@ select{
     padding:12px;
     border:1px solid #ccc;
     border-radius:8px;
-    font-size:16px;
 }
 
 button{
     width:100%;
-    margin-top:20px;
     padding:14px;
-    background:#16a34a;
-    color:white;
+    margin-top:20px;
     border:none;
     border-radius:8px;
+    background:#16a34a;
+    color:white;
     font-size:16px;
-    font-weight:bold;
     cursor:pointer;
-}
-
-button:disabled{
-    background:#999;
 }
 
 #status{
@@ -82,7 +107,6 @@ button:disabled{
 }
 </style>
 </head>
-
 <body>
 
 <div class="card">
@@ -92,6 +116,25 @@ button:disabled{
 <p class="subtitle">
 Catat pemasukan dan pengeluaran harian
 </p>
+
+<div class="dashboard">
+
+<div class="box saldo">
+<h3>💰 Saldo</h3>
+<p id="saldo">Rp 0</p>
+</div>
+
+<div class="box masuk">
+<h3>📈 Total Pemasukan</h3>
+<p id="totalMasuk">Rp 0</p>
+</div>
+
+<div class="box keluar">
+<h3>📉 Total Pengeluaran</h3>
+<p id="totalKeluar">Rp 0</p>
+</div>
+
+</div>
 
 <form id="formKeuangan">
 
@@ -105,12 +148,22 @@ Catat pemasukan dan pengeluaran harian
 </select>
 
 <label>Kategori</label>
-<input type="text" id="kategori">
+<select id="kategori">
+<option value="Tagihan Rumah">Tagihan Rumah</option>
+<option value="Kebutuhan Harian dan Bulanan">Kebutuhan Harian</option>
+<option value="Cicilan Rumah Kiramland">Rumah Kiramland</option>
+<option value="Keperluan Pribadi">Keperluan Pribadi</option>
+<option value="Keperluan Kendaraan">Kendaraan</option>
+<option value="Kesehatan/Medical">Medical</option>
+<option value="Keperluan Bayi">Baby Shop</option>
+<option value="Gaji">Gaji</option>
+<option value="Gaji">Income lain</option>
+</select>
 
 <label>Deskripsi</label>
 <input type="text" id="deskripsi">
 
-<label>Nominal (Rp)</label>
+<label>Nominal</label>
 <input type="number" id="nominal" required>
 
 <button type="submit" id="btnSimpan">
@@ -125,67 +178,112 @@ Simpan Transaksi
 
 <script>
 
-const API_URL =
-"https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
+// GANTI DENGAN URL APPS SCRIPT TERBARU
+const API_URL = "https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
+
+function formatRupiah(nilai){
+    return "Rp " + Number(nilai).toLocaleString("id-ID");
+}
+
+async function loadDashboard(){
+
+    try{
+
+        console.log("Load Dashboard");
+        console.log("API:", API_URL);
+
+        const response = await fetch(API_URL);
+
+        const data = await response.json();
+
+        console.log("DATA:", data);
+
+        let totalMasuk = 0;
+        let totalKeluar = 0;
+
+        data.forEach(item => {
+
+            const nominal = Number(item.nominal) || 0;
+
+            if(item.jenis === "Masuk"){
+                totalMasuk += nominal;
+            }
+
+            if(item.jenis === "Keluar"){
+                totalKeluar += nominal;
+            }
+
+        });
+
+        document.getElementById("totalMasuk").innerText =
+            formatRupiah(totalMasuk);
+
+        document.getElementById("totalKeluar").innerText =
+            formatRupiah(totalKeluar);
+
+        document.getElementById("saldo").innerText =
+            formatRupiah(totalMasuk - totalKeluar);
+
+        document.getElementById("status").innerHTML = "";
+
+    }catch(error){
+
+        console.error(error);
+
+        document.getElementById("status").innerHTML =
+            "❌ Dashboard gagal memuat data : " + error.message;
+    }
+}
 
 document.getElementById("tanggal").value =
 new Date().toISOString().split("T")[0];
 
 document.getElementById("formKeuangan")
-.addEventListener("submit", async (e) => {
+.addEventListener("submit", async function(e){
 
-e.preventDefault();
+    e.preventDefault();
 
-const btn = document.getElementById("btnSimpan");
-const status = document.getElementById("status");
+    const payload = {
+        tanggal : document.getElementById("tanggal").value,
+        jenis : document.getElementById("jenis").value,
+        kategori : document.getElementById("kategori").value,
+        deskripsi : document.getElementById("deskripsi").value,
+        nominal : document.getElementById("nominal").value
+    };
 
-btn.disabled = true;
-btn.textContent = "Mengirim...";
+    try{
 
-const data = {
-tanggal: document.getElementById("tanggal").value,
-jenis: document.getElementById("jenis").value,
-kategori: document.getElementById("kategori").value,
-deskripsi: document.getElementById("deskripsi").value,
-nominal: document.getElementById("nominal").value
-};
+        await fetch(API_URL,{
+            method:"POST",
+            mode:"no-cors",
+            headers:{
+                "Content-Type":"text/plain"
+            },
+            body:JSON.stringify(payload)
+        });
 
-try{
+        document.getElementById("status").innerHTML =
+            "✅ Data berhasil disimpan";
 
-await fetch(API_URL,{
-method:"POST",
-mode:"no-cors",
-headers:{
-"Content-Type":"text/plain"
-},
-body: JSON.stringify(data)
-});
+        document.getElementById("deskripsi").value = "";
+        document.getElementById("nominal").value = "";
 
-status.innerHTML =
-"✅ Data berhasil dikirim. Silakan cek Google Spreadsheet.";
+        setTimeout(loadDashboard,2000);
 
-document.getElementById("kategori").value = "";
-document.getElementById("deskripsi").value = "";
-document.getElementById("nominal").value = "";
+    }catch(error){
 
-}catch(error){
+        document.getElementById("status").innerHTML =
+            "❌ Gagal menyimpan data";
 
-console.error(error);
-
-status.innerHTML =
-"❌ Gagal mengirim data";
-
-}
-
-btn.disabled = false;
-btn.textContent = "Simpan Transaksi";
+        console.error(error);
+    }
 
 });
 
-if("serviceWorker" in navigator){
-window.addEventListener("load", () => {
-navigator.serviceWorker.register("./sw.js");
-});
+loadDashboard();
+
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js");
 }
 
 </script>

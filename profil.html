@@ -12,7 +12,6 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-
 *{
 margin:0;
 padding:0;
@@ -23,18 +22,18 @@ font-family:Arial,sans-serif;
 body{
 background:#f0fdf4;
 padding:15px;
-padding-bottom:120px;
+padding-bottom:100px;
 transition:.3s;
 }
 
 .container{
-max-width:800px;
+max-width:900px;
 margin:auto;
 }
 
 .header{
 text-align:center;
-margin-bottom:20px;
+margin-bottom:15px;
 }
 
 .header h1{
@@ -86,8 +85,8 @@ background:#15803d;
 .progress{
 width:100%;
 height:20px;
-background:#eee;
-border-radius:30px;
+background:#e5e7eb;
+border-radius:20px;
 overflow:hidden;
 margin-top:10px;
 }
@@ -96,12 +95,12 @@ margin-top:10px;
 height:100%;
 width:0%;
 background:#16a34a;
-transition:.3s;
+transition:.4s;
 }
 
 .info{
-padding:10px;
 background:#f5f5f5;
+padding:10px;
 border-radius:10px;
 margin-top:10px;
 line-height:1.6;
@@ -109,24 +108,22 @@ line-height:1.6;
 
 .bottom-nav{
 position:fixed;
-bottom:0;
 left:0;
 right:0;
-z-index:9999;
-background:#fff;
+bottom:0;
 display:flex;
 justify-content:space-around;
-align-items:center;
+background:#fff;
 padding:12px;
-padding-bottom:max(12px, env(safe-area-inset-bottom));
-box-shadow:0 -2px 10px rgba(0,0,0,.1);
+box-shadow:0 -2px 8px rgba(0,0,0,.1);
+z-index:9999;
 }
 
 .bottom-nav a{
 text-decoration:none;
-color:#333;
-font-size:14px;
+color:#444;
 text-align:center;
+font-size:14px;
 }
 
 .active{
@@ -152,6 +149,7 @@ border:none;
 
 .dark .info{
 background:#374151;
+color:white;
 }
 
 .dark .bottom-nav{
@@ -162,8 +160,10 @@ background:#1f2937;
 color:white;
 }
 
+.dark .active{
+color:#22c55e !important;
+}
 </style>
-
 </head>
 
 <body>
@@ -179,16 +179,10 @@ color:white;
 <h3>👤 Profil Pengguna</h3>
 
 <label>Nama</label>
-<input
-type="text"
-id="nama"
-placeholder="Nama Anda">
+<input type="text" id="nama">
 
 <label>Email</label>
-<input
-type="email"
-id="email"
-placeholder="email@email.com">
+<input type="email" id="email">
 
 <button onclick="simpanProfil()">
 💾 Simpan Profil
@@ -201,38 +195,24 @@ placeholder="email@email.com">
 <h3>🎯 Target Tabungan</h3>
 
 <label>Nama Target</label>
-<input
-type="text"
-id="namaTarget"
-placeholder="Dana Darurat">
+<input type="text" id="namaTarget">
 
 <label>Nominal Target</label>
-<input
-type="number"
-id="target">
+<input type="number" id="target">
 
-<label>Terkumpul</label>
-<input
-type="number"
-id="terkumpul">
+<label>Nominal Terkumpul</label>
+<input type="number" id="terkumpul">
 
 <button onclick="hitungTarget()">
 🎯 Hitung Progress
 </button>
 
 <div class="progress">
-<div
-class="progress-bar"
-id="progressBar">
-</div>
+<div class="progress-bar" id="progressBar"></div>
 </div>
 
-<div
-class="info"
-id="hasilTarget">
-
-Belum ada target
-
+<div class="info" id="hasilTarget">
+Belum ada target tabungan
 </div>
 
 </div>
@@ -251,9 +231,7 @@ Aktifkan / Nonaktifkan Dark Mode
 
 <h3>📅 Periode Export</h3>
 
-<input
-type="month"
-id="exportBulan">
+<input type="month" id="exportBulan">
 
 </div>
 
@@ -265,8 +243,8 @@ id="exportBulan">
 📈 Export Excel
 </button>
 
-<button onclick="exportPDF()">
-📄 Export PDF
+<button onclick="exportCSV()">
+📄 Export CSV
 </button>
 
 </div>
@@ -277,6 +255,7 @@ id="exportBulan">
 
 <p>Keuangan Pribadi v1.0</p>
 <p>PWA Monitoring Keuangan Pribadi</p>
+<p>Dibuat menggunakan GitHub Pages & Google Apps Script</p>
 
 </div>
 
@@ -309,9 +288,9 @@ const API_URL =
 
 function simpanProfil(){
 
-const profil = {
-nama: document.getElementById("nama").value,
-email: document.getElementById("email").value
+const profil={
+nama:document.getElementById("nama").value,
+email:document.getElementById("email").value
 };
 
 localStorage.setItem(
@@ -325,61 +304,100 @@ alert("Profil berhasil disimpan");
 
 function loadProfil(){
 
-const data =
+const data=
 localStorage.getItem("profil");
 
-if(data){
+if(!data) return;
 
-const profil =
+const profil=
 JSON.parse(data);
 
-document.getElementById("nama").value =
+document.getElementById("nama").value=
 profil.nama || "";
 
-document.getElementById("email").value =
+document.getElementById("email").value=
 profil.email || "";
-
-}
 
 }
 
 function hitungTarget(){
 
-const target =
+const namaTarget=
+document.getElementById("namaTarget").value;
+
+const target=
 Number(document.getElementById("target").value);
 
-const terkumpul =
+const terkumpul=
 Number(document.getElementById("terkumpul").value);
 
-if(target <= 0){
+if(target<=0){
+alert("Masukkan target yang valid");
 return;
 }
 
-const persen =
+const persen=
 Math.min(
 100,
-(terkumpul / target) * 100
+(terkumpul/target)*100
 );
 
 document.getElementById("progressBar")
-.style.width =
-persen + "%";
+.style.width=
+persen+"%";
 
 document.getElementById("hasilTarget")
-.innerHTML = `
-🎯 Progress :
+.innerHTML=`
+
+<b>${namaTarget || "Target Tabungan"}</b>
+<br><br>
+
+Progress:
 <b>${persen.toFixed(1)}%</b>
 
 <br><br>
 
-📌 Target :
+Target:
 Rp ${target.toLocaleString("id-ID")}
 
 <br>
 
-💰 Terkumpul :
+Terkumpul:
 Rp ${terkumpul.toLocaleString("id-ID")}
+
 `;
+
+localStorage.setItem(
+"targetTabungan",
+JSON.stringify({
+namaTarget,
+target,
+terkumpul
+})
+);
+
+}
+
+function loadTarget(){
+
+const data=
+localStorage.getItem("targetTabungan");
+
+if(!data) return;
+
+const targetData=
+JSON.parse(data);
+
+document.getElementById("namaTarget").value=
+targetData.namaTarget || "";
+
+document.getElementById("target").value=
+targetData.target || "";
+
+document.getElementById("terkumpul").value=
+targetData.terkumpul || "";
+
+hitungTarget();
 
 }
 
@@ -388,7 +406,7 @@ function toggleDarkMode(){
 document.body.classList.toggle("dark");
 
 localStorage.setItem(
-"darkmode",
+"darkMode",
 document.body.classList.contains("dark")
 );
 
@@ -396,25 +414,21 @@ document.body.classList.contains("dark")
 
 function loadDarkMode(){
 
-const dark =
-localStorage.getItem("darkmode");
+const dark=
+localStorage.getItem("darkMode");
 
-if(dark === "true"){
+if(dark==="true"){
 document.body.classList.add("dark");
 }
 
 }
 
-function setDefaultExportMonth(){
+function setDefaultMonth(){
 
-const now = new Date();
+const now=new Date();
 
-const month =
-String(now.getMonth()+1)
-.padStart(2,"0");
-
-document.getElementById("exportBulan").value =
-`${now.getFullYear()}-${month}`;
+document.getElementById("exportBulan").value=
+`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
 
 }
 
@@ -422,53 +436,31 @@ async function exportExcel(){
 
 try{
 
-const periode =
-document.getElementById("exportBulan").value;
-
-if(!periode){
-alert("Pilih bulan terlebih dahulu");
-return;
-}
-
-const [tahun,bulan] =
-periode.split("-");
-
-const response =
+const response=
 await fetch(API_URL);
 
-const data =
+const data=
 await response.json();
 
-const filtered =
-data.filter(item => {
+const periode=
+document.getElementById("exportBulan").value;
 
-if(!item.tanggal) return false;
-
-const itemYear =
-item.tanggal.substring(0,4);
-
-const itemMonth =
-item.tanggal.substring(5,7);
-
-return (
-itemMonth === bulan &&
-itemYear === tahun
+const filter=
+data.filter(item=>
+item.tanggal &&
+item.tanggal.startsWith(periode)
 );
 
-});
-
-if(filtered.length === 0){
-
-alert("Tidak ada data pada periode tersebut");
+if(filter.length===0){
+alert("Tidak ada data");
 return;
-
 }
 
-const workbook =
+const workbook=
 XLSX.utils.book_new();
 
-const worksheet =
-XLSX.utils.json_to_sheet(filtered);
+const worksheet=
+XLSX.utils.json_to_sheet(filter);
 
 XLSX.utils.book_append_sheet(
 workbook,
@@ -478,32 +470,89 @@ worksheet,
 
 XLSX.writeFile(
 workbook,
-`Laporan_Keuangan_${tahun}_${bulan}.xlsx`
+`Laporan_${periode}.xlsx`
 );
 
 }catch(error){
 
 console.error(error);
+
 alert("Gagal export Excel");
 
 }
 
 }
 
-function exportPDF(){
+async function exportCSV(){
 
-alert(
-"Fitur Export PDF akan ditambahkan pada update berikutnya."
+try{
+
+const response=
+await fetch(API_URL);
+
+const data=
+await response.json();
+
+const periode=
+document.getElementById("exportBulan").value;
+
+const filter=
+data.filter(item=>
+item.tanggal &&
+item.tanggal.startsWith(periode)
 );
+
+if(filter.length===0){
+
+alert("Tidak ada data");
+return;
+
+}
+
+let csv=
+"tanggal,jenis,kategori,deskripsi,nominal\n";
+
+filter.forEach(item=>{
+
+csv+=`${item.tanggal},${item.jenis},${item.kategori},${item.deskripsi},${item.nominal}\n`;
+
+});
+
+const blob=
+new Blob([csv],{
+type:"text/csv"
+});
+
+const url=
+URL.createObjectURL(blob);
+
+const a=
+document.createElement("a");
+
+a.href=url;
+a.download=`Laporan_${periode}.csv`;
+
+a.click();
+
+URL.revokeObjectURL(url);
+
+}catch(error){
+
+console.error(error);
+
+alert("Gagal export CSV");
+
+}
 
 }
 
 loadProfil();
+loadTarget();
 loadDarkMode();
-setDefaultExportMonth();
+setDefaultMonth();
 
 if("serviceWorker" in navigator){
-navigator.serviceWorker.register("./sw.js");
+navigator.serviceWorker.register("sw.js");
 }
 
 </script>

@@ -21,11 +21,11 @@ font-family:Arial,sans-serif;
 body{
 background:#f0fdf4;
 padding:15px;
-padding-bottom:120px;
+padding-bottom:100px;
 }
 
 .container{
-max-width:700px;
+max-width:800px;
 margin:auto;
 }
 
@@ -40,16 +40,16 @@ color:#16a34a;
 
 .card{
 background:#fff;
-border-radius:16px;
 padding:20px;
+border-radius:16px;
 box-shadow:0 2px 10px rgba(0,0,0,.1);
 }
 
 .info{
 background:#dcfce7;
-color:#166534;
 padding:12px;
 border-radius:10px;
+color:#166534;
 margin-bottom:15px;
 }
 
@@ -65,13 +65,13 @@ select,
 textarea{
 width:100%;
 padding:12px;
-border:1px solid #ddd;
 border-radius:10px;
+border:1px solid #ddd;
 font-size:15px;
 }
 
 textarea{
-height:80px;
+height:100px;
 resize:none;
 }
 
@@ -82,9 +82,9 @@ margin-top:20px;
 border:none;
 border-radius:10px;
 background:#16a34a;
-color:white;
-font-size:16px;
+color:#fff;
 font-weight:bold;
+font-size:16px;
 cursor:pointer;
 }
 
@@ -100,22 +100,20 @@ font-weight:bold;
 
 .bottom-nav{
 position:fixed;
-bottom:0;
 left:0;
 right:0;
-z-index:9999;
+bottom:0;
 background:#fff;
 display:flex;
 justify-content:space-around;
-align-items:center;
 padding:12px;
-padding-bottom:max(12px, env(safe-area-inset-bottom));
 box-shadow:0 -2px 10px rgba(0,0,0,.1);
+z-index:9999;
 }
 
 .bottom-nav a{
 text-decoration:none;
-color:#333;
+color:#444;
 font-size:14px;
 text-align:center;
 }
@@ -139,48 +137,45 @@ font-weight:bold;
 <div class="card">
 
 <div class="info">
-Masukkan transaksi pemasukan atau pengeluaran Anda.
+Masukkan transaksi pemasukan atau pengeluaran.
 </div>
 
 <form id="formKeuangan">
 
 <label>Tanggal</label>
-<input type="date" id="tanggal" required>
+<input
+type="date"
+id="tanggal"
+required>
 
 <label>Jenis Transaksi</label>
-
 <select id="jenis">
-<option value="Masuk">📈 Pemasukan</option>
-<option value="Keluar">📉 Pengeluaran</option>
+
+<option value="Masuk">
+📈 Pemasukan
+</option>
+
+<option value="Keluar">
+📉 Pengeluaran
+</option>
+
 </select>
 
 <label>Kategori</label>
-<select id="kategori">
-<option value="Tagihan Rumah">Tagihan Rumah</option>
-<option value="Kebutuhan Harian dan Bulanan">Kebutuhan Harian</option>
-<option value="Cicilan Rumah Kiramland">Rumah Kiramland</option>
-<option value="Keperluan Pribadi">Keperluan Pribadi</option>
-<option value="Keperluan Kendaraan">Kendaraan</option>
-<option value="Kesehatan/Medical">Medical</option>
-<option value="Keperluan Bayi">Baby Shop</option>
-<option value="Gaji">Gaji</option>
-<option value="Gaji">Income lain</option>
-</select>
+<select id="kategori"></select>
 
 <label>Deskripsi</label>
-
 <textarea
 id="deskripsi"
 placeholder="Contoh: Gaji Bulanan, Belanja Bulanan">
 </textarea>
 
 <label>Nominal</label>
-
 <input
 type="number"
 id="nominal"
-min="1"
 required
+min="1"
 placeholder="Masukkan nominal">
 
 <button type="submit">
@@ -231,12 +226,12 @@ const kategoriMasuk = [
 
 const kategoriKeluar = [
 "Tagihan Rumah",
-"Kebutuhan Harian",
-"Cicilan Rumah",
+"Kebutuhan Harian dan Bulanan",
+"Cicilan Rumah Kiramland",
 "Keperluan Pribadi",
-"Kendaraan",
-"Medical",
-"Baby Shop"
+"Keperluan Kendaraan",
+"Kesehatan/Medical",
+"Keperluan Bayi"
 ];
 
 function loadKategori(){
@@ -254,7 +249,7 @@ jenis === "Masuk"
 ? kategoriMasuk
 : kategoriKeluar;
 
-data.forEach(item => {
+data.forEach(item=>{
 
 const option =
 document.createElement("option");
@@ -268,14 +263,12 @@ kategori.appendChild(option);
 
 }
 
-window.onload = function(){
+function setTanggalHariIni(){
 
 document.getElementById("tanggal").value =
 new Date().toISOString().split("T")[0];
 
-loadKategori();
-
-};
+}
 
 document
 .getElementById("jenis")
@@ -292,6 +285,9 @@ async function(e){
 
 e.preventDefault();
 
+const status =
+document.getElementById("status");
+
 const payload = {
 
 tanggal:
@@ -307,15 +303,18 @@ deskripsi:
 document.getElementById("deskripsi").value,
 
 nominal:
+Number(
 document.getElementById("nominal").value
+)
 
 };
 
-if(Number(payload.nominal) <= 0){
+if(payload.nominal <= 0){
 
-document.getElementById("status")
-.innerHTML =
+status.innerHTML =
 "❌ Nominal harus lebih dari 0";
+
+status.style.color = "red";
 
 return;
 
@@ -323,41 +322,78 @@ return;
 
 try{
 
-document.getElementById("status")
-.innerHTML =
+status.innerHTML =
 "⏳ Menyimpan data...";
 
+status.style.color =
+"#f59e0b";
+
+const response =
 await fetch(API_URL,{
 method:"POST",
-mode:"no-cors",
-headers:{
-"Content-Type":"text/plain"
-},
 body:JSON.stringify(payload)
 });
 
-document.getElementById("status")
-.innerHTML =
+console.log(response);
+
+status.innerHTML =
 "✅ Data berhasil disimpan";
 
-document.getElementById("deskripsi").value = "";
-document.getElementById("nominal").value = "";
+status.style.color =
+"green";
 
-setTimeout(() => {
-window.location.href = "index.html";
-}, 1000);
+document
+.getElementById("formKeuangan")
+.reset();
+
+setTanggalHariIni();
+
+loadKategori();
+
+setTimeout(()=>{
+
+window.location.href =
+"index.html";
+
+},1000);
 
 }catch(error){
 
 console.error(error);
 
-document.getElementById("status")
-.innerHTML =
+status.innerHTML =
 "❌ Gagal menyimpan data";
+
+status.style.color =
+"red";
 
 }
 
 });
 
+setTanggalHariIni();
+loadKategori();
+
 if("serviceWorker" in navigator){
-navigator
+
+window.addEventListener("load",()=>{
+
+navigator.serviceWorker
+.register("sw.js")
+.then(()=>{
+console.log(
+"Service Worker aktif"
+);
+})
+.catch(err=>{
+console.error(err);
+});
+
+});
+
+}
+
+</script>
+
+</body>
+</html>

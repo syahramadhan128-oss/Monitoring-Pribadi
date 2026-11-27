@@ -6,485 +6,365 @@
 
 <title>Laporan Keuangan</title>
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#16a34a">
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
-}
-
 body{
-background:#f0fdf4;
-padding:15px;
-padding-bottom:100px;
-}
-
-.container{
-max-width:1000px;
-margin:auto;
-}
-
-.header{
-text-align:center;
-margin-bottom:20px;
-}
-
-.header h1{
-color:#16a34a;
+    font-family:Arial,sans-serif;
+    background:#f4f7f6;
+    padding:20px;
 }
 
 .card{
-background:#fff;
-padding:15px;
-border-radius:15px;
-box-shadow:0 2px 8px rgba(0,0,0,.1);
-margin-bottom:15px;
+    background:white;
+    padding:20px;
+    margin-bottom:20px;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.1);
 }
 
-.summary{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:10px;
-}
-
-.box{
-padding:15px;
-border-radius:12px;
-text-align:center;
-background:#f8fafc;
-}
-
-.box h3{
-font-size:14px;
-margin-bottom:5px;
-}
-
-.box p{
-font-size:20px;
-font-weight:bold;
-}
-
-.income{
-color:#16a34a;
-}
-
-.expense{
-color:#dc2626;
-}
-
-.balance{
-color:#2563eb;
+h2{
+    margin-bottom:20px;
 }
 
 select{
-width:100%;
-padding:12px;
-border-radius:10px;
-border:1px solid #ddd;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:8px;
 }
 
 table{
-width:100%;
-border-collapse:collapse;
-}
-
-th,td{
-padding:10px;
-border-bottom:1px solid #eee;
-text-align:left;
-font-size:14px;
+    width:100%;
+    border-collapse:collapse;
 }
 
 th{
-background:#16a34a;
-color:white;
+    background:#16a34a;
+    color:white;
+    padding:10px;
+    text-align:left;
 }
 
-.bottom-nav{
-position:fixed;
-left:0;
-right:0;
-bottom:0;
-background:#fff;
-display:flex;
-justify-content:space-around;
-padding:12px;
-box-shadow:0 -2px 10px rgba(0,0,0,.1);
-z-index:9999;
+td{
+    padding:10px;
+    border-bottom:1px solid #ddd;
 }
 
-.bottom-nav a{
-text-decoration:none;
-color:#444;
-font-size:14px;
-text-align:center;
-}
-
-.active{
-color:#16a34a !important;
-font-weight:bold;
-}
-
-.loading{
-text-align:center;
-padding:20px;
-color:#666;
-}
-
-@media(max-width:600px){
-
-.summary{
-grid-template-columns:1fr;
-}
-
-th,td{
-font-size:12px;
-}
-
+canvas{
+    max-height:450px;
 }
 
 </style>
 </head>
-
 <body>
 
-<div class="container">
+<h2>📊 Laporan Keuangan</h2>
 
-<div class="header">
-<h1>📊 Laporan Keuangan</h1>
+<div class="card">
+
+    <label><b>Filter Periode</b></label>
+
+    <br><br>
+
+    <select id="filterBulan">
+        <option value="all">Semua Data</option>
+    </select>
+
 </div>
 
 <div class="card">
 
-<select id="bulanFilter">
-<option value="">Semua Bulan</option>
-</select>
+    <h3>Diagram Total per Kategori</h3>
+
+    <canvas id="barChart"></canvas>
 
 </div>
 
 <div class="card">
 
-<div class="summary">
+    <h3>Ringkasan Kategori</h3>
 
-<div class="box">
-<h3>Pemasukan</h3>
-<p class="income" id="totalMasuk">Rp 0</p>
-</div>
+    <table>
 
-<div class="box">
-<h3>Pengeluaran</h3>
-<p class="expense" id="totalKeluar">Rp 0</p>
-</div>
+        <thead>
+            <tr>
+                <th>Jenis</th>
+                <th>Kategori</th>
+                <th>Total</th>
+            </tr>
+        </thead>
 
-<div class="box">
-<h3>Saldo</h3>
-<p class="balance" id="saldo">Rp 0</p>
-</div>
+        <tbody id="laporanKategori"></tbody>
 
-</div>
-
-</div>
-
-<div class="card">
-<canvas id="grafik"></canvas>
-</div>
-
-<div class="card">
-
-<table>
-
-<thead>
-<tr>
-<th>Tanggal</th>
-<th>Jenis</th>
-<th>Kategori</th>
-<th>Nominal</th>
-</tr>
-</thead>
-
-<tbody id="tbodyData">
-<tr>
-<td colspan="4" class="loading">
-Memuat data...
-</td>
-</tr>
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
-<div class="bottom-nav">
-
-<a href="index.html">
-🏠<br>Dashboard
-</a>
-
-<a href="transaksi.html">
-➕<br>Transaksi
-</a>
-
-<a href="laporan.html" class="active">
-📊<br>Laporan
-</a>
-
-<a href="profil.html">
-⚙️<br>Profil
-</a>
+    </table>
 
 </div>
 
 <script>
 
-const API_URL =
-"https://script.google.com/macros/s/AKfycbyzy9XLvpx5DSZSrOmNvL40gTeITz6WxuvMduKe9kBFDZIvuQwngtUgRMOrT_68GTxH/exec";
+let chartKategori = null;
 
-let chart;
-let semuaData = [];
+/*
+==================================
+AMBIL DATA TRANSAKSI
+==================================
+*/
 
-function formatRupiah(nilai){
+const transaksi =
+JSON.parse(localStorage.getItem("transaksi")) || [];
 
-return "Rp " +
-Number(nilai || 0)
-.toLocaleString("id-ID");
+/*
+==================================
+FORMAT RUPIAH
+==================================
+*/
 
-}
+function formatRupiah(angka){
 
-function isiFilterBulan(data){
-
-const filter =
-document.getElementById("bulanFilter");
-
-filter.innerHTML =
-'<option value="">Semua Bulan</option>';
-
-const bulanSet =
-new Set();
-
-data.forEach(item=>{
-
-if(item.tanggal){
-
-bulanSet.add(
-item.tanggal.substring(0,7)
-);
+    return "Rp " +
+    Number(angka).toLocaleString("id-ID");
 
 }
 
-});
+/*
+==================================
+LOAD BULAN
+==================================
+*/
 
-[...bulanSet]
-.sort()
-.reverse()
-.forEach(bulan=>{
+function loadBulan(){
 
-const option =
-document.createElement("option");
+    const bulanSet = new Set();
 
-option.value = bulan;
-option.textContent = bulan;
+    transaksi.forEach(item=>{
 
-filter.appendChild(option);
+        if(item.tanggal){
 
-});
+            bulanSet.add(
+                item.tanggal.substring(0,7)
+            );
 
-}
+        }
 
-function render(data){
+    });
 
-let masuk = 0;
-let keluar = 0;
+    const select =
+    document.getElementById("filterBulan");
 
-const tbody =
-document.getElementById("tbodyData");
+    [...bulanSet]
+    .sort()
+    .forEach(bln=>{
 
-tbody.innerHTML = "";
+        select.innerHTML += `
+        <option value="${bln}">
+        ${bln}
+        </option>
+        `;
 
-data.forEach(row=>{
-
-const nominal =
-Number(row.nominal || 0);
-
-const jenis =
-String(row.jenis || "")
-.toLowerCase();
-
-if(
-jenis === "masuk" ||
-jenis === "pemasukan"
-){
-
-masuk += nominal;
-
-}else{
-
-keluar += nominal;
+    });
 
 }
 
-tbody.innerHTML += `
-<tr>
-<td>${row.tanggal || ""}</td>
-<td>${row.jenis || ""}</td>
-<td>${row.kategori || ""}</td>
-<td>${formatRupiah(nominal)}</td>
-</tr>
-`;
+/*
+==================================
+FILTER DATA
+==================================
+*/
 
-});
+function getDataFilter(){
 
-document.getElementById("totalMasuk")
-.textContent =
-formatRupiah(masuk);
+    const bulan =
+    document.getElementById("filterBulan").value;
 
-document.getElementById("totalKeluar")
-.textContent =
-formatRupiah(keluar);
+    if(bulan==="all"){
 
-document.getElementById("saldo")
-.textContent =
-formatRupiah(masuk-keluar);
+        return transaksi;
 
-const ctx =
-document.getElementById("grafik");
+    }
 
-if(chart){
-chart.destroy();
-}
-
-chart =
-new Chart(ctx,{
-type:"doughnut",
-data:{
-labels:[
-"Pemasukan",
-"Pengeluaran"
-],
-datasets:[{
-data:[
-masuk,
-keluar
-],
-backgroundColor:[
-"#16a34a",
-"#dc2626"
-]
-}]
-}
-});
-
-if(data.length===0){
-
-tbody.innerHTML =
-`
-<tr>
-<td colspan="4"
-style="text-align:center;">
-Tidak ada data
-</td>
-</tr>
-`;
+    return transaksi.filter(item =>
+        item.tanggal.substring(0,7)===bulan
+    );
 
 }
 
+/*
+==================================
+TABEL RINGKASAN
+==================================
+*/
+
+function renderTabel(){
+
+    const data = getDataFilter();
+
+    const rekap = {};
+
+    data.forEach(item=>{
+
+        const key =
+        item.jenis + "|" + item.kategori;
+
+        if(!rekap[key]){
+
+            rekap[key]={
+                jenis:item.jenis,
+                kategori:item.kategori,
+                total:0
+            };
+
+        }
+
+        rekap[key].total +=
+        Number(item.nominal);
+
+    });
+
+    let html="";
+
+    Object.values(rekap)
+    .sort((a,b)=>b.total-a.total)
+    .forEach(item=>{
+
+        html += `
+        <tr>
+            <td>${item.jenis}</td>
+            <td>${item.kategori}</td>
+            <td>${formatRupiah(item.total)}</td>
+        </tr>
+        `;
+
+    });
+
+    document.getElementById(
+        "laporanKategori"
+    ).innerHTML = html;
+
 }
 
-async function loadData(){
+/*
+==================================
+GRAFIK BATANG
+==================================
+*/
 
-try{
+function renderChart(){
 
-const response =
-await fetch(API_URL);
+    const data = getDataFilter();
 
-const data =
-await response.json();
+    const kategoriMap = {};
 
-console.log("DATA API",data);
+    data.forEach(item=>{
 
-if(!Array.isArray(data)){
-throw new Error("Format JSON tidak valid");
+        if(!kategoriMap[item.kategori]){
+
+            kategoriMap[item.kategori]=0;
+
+        }
+
+        kategoriMap[item.kategori] +=
+        Number(item.nominal);
+
+    });
+
+    const labels =
+    Object.keys(kategoriMap);
+
+    const values =
+    Object.values(kategoriMap);
+
+    const ctx =
+    document
+    .getElementById("barChart")
+    .getContext("2d");
+
+    if(chartKategori){
+
+        chartKategori.destroy();
+
+    }
+
+    chartKategori = new Chart(ctx,{
+
+        type:"bar",
+
+        data:{
+
+            labels:labels,
+
+            datasets:[{
+
+                label:"Total Nominal",
+
+                data:values,
+
+                backgroundColor:[
+                    "#22c55e",
+                    "#3b82f6",
+                    "#f59e0b",
+                    "#ef4444",
+                    "#8b5cf6",
+                    "#14b8a6"
+                ]
+
+            }]
+
+        },
+
+        options:{
+
+            responsive:true,
+
+            plugins:{
+                legend:{
+                    display:false
+                }
+            },
+
+            scales:{
+
+                y:{
+
+                    beginAtZero:true
+
+                }
+
+            }
+
+        }
+
+    });
+
 }
 
-semuaData = data;
-
-isiFilterBulan(data);
-
-render(data);
-
-}catch(error){
-
-console.error(error);
-
-document.getElementById(
-"tbodyData"
-).innerHTML =
-`
-<tr>
-<td colspan="4"
-style="color:red;text-align:center;">
-Gagal mengambil data
-</td>
-</tr>
-`;
-
-}
-
-}
+/*
+==================================
+FILTER CHANGE
+==================================
+*/
 
 document
-.getElementById("bulanFilter")
-.addEventListener(
-"change",
-function(){
+.getElementById("filterBulan")
+.addEventListener("change",()=>{
 
-const bulan =
-this.value;
+    renderTabel();
 
-if(!bulan){
+    renderChart();
 
-render(semuaData);
-return;
-
-}
-
-const filtered =
-semuaData.filter(item=>
-
-item.tanggal &&
-item.tanggal.startsWith(bulan)
-
-);
-
-render(filtered);
-
-}
-);
-
-loadData();
-
-if("serviceWorker" in navigator){
-
-navigator.serviceWorker
-.register("sw.js")
-.then(()=>{
-console.log(
-"Service Worker aktif"
-);
-})
-.catch(err=>{
-console.error(err);
 });
 
-}
+/*
+==================================
+LOAD AWAL
+==================================
+*/
+
+loadBulan();
+
+renderTabel();
+
+renderChart();
 
 </script>
 

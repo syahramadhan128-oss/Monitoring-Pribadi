@@ -10,22 +10,61 @@
 
 <style>
 
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
 body{
-    font-family:Arial,sans-serif;
+    font-family:Arial, sans-serif;
     background:#f4f7f6;
     padding:20px;
 }
 
-.card{
-    background:white;
-    padding:20px;
-    margin-bottom:20px;
-    border-radius:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,.1);
-}
-
 h2{
     margin-bottom:20px;
+}
+
+.card{
+    background:#fff;
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+.summary{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+.summary-card{
+    flex:1;
+    min-width:200px;
+    padding:15px;
+    border-radius:12px;
+}
+
+.masuk{
+    background:#dcfce7;
+}
+
+.keluar{
+    background:#fee2e2;
+}
+
+.saldo{
+    background:#dbeafe;
+}
+
+.summary-card h4{
+    margin-bottom:10px;
+}
+
+.summary-card h2{
+    margin:0;
 }
 
 select{
@@ -42,16 +81,17 @@ table{
 th{
     background:#16a34a;
     color:white;
-    padding:10px;
+    padding:12px;
     text-align:left;
 }
 
 td{
-    padding:10px;
+    padding:12px;
     border-bottom:1px solid #ddd;
 }
 
 canvas{
+    width:100% !important;
     max-height:450px;
 }
 
@@ -63,8 +103,30 @@ canvas{
 
 <div class="card">
 
-    <label><b>Filter Periode</b></label>
+    <div class="summary">
 
+        <div class="summary-card masuk">
+            <h4>Total Masuk</h4>
+            <h2 id="totalMasuk">Rp 0</h2>
+        </div>
+
+        <div class="summary-card keluar">
+            <h4>Total Keluar</h4>
+            <h2 id="totalKeluar">Rp 0</h2>
+        </div>
+
+        <div class="summary-card saldo">
+            <h4>Saldo</h4>
+            <h2 id="saldo">Rp 0</h2>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="card">
+
+    <label><b>Filter Periode</b></label>
     <br><br>
 
     <select id="filterBulan">
@@ -75,7 +137,9 @@ canvas{
 
 <div class="card">
 
-    <h3>Diagram Total per Kategori</h3>
+    <h3>Diagram Pengeluaran Per Kategori</h3>
+
+    <br>
 
     <canvas id="barChart"></canvas>
 
@@ -84,6 +148,8 @@ canvas{
 <div class="card">
 
     <h3>Ringkasan Kategori</h3>
+
+    <br>
 
     <table>
 
@@ -105,20 +171,16 @@ canvas{
 
 let chartKategori = null;
 
-/*
-==================================
-AMBIL DATA TRANSAKSI
-==================================
-*/
+/* =========================
+   DATA TRANSAKSI
+========================= */
 
 const transaksi =
 JSON.parse(localStorage.getItem("transaksi")) || [];
 
-/*
-==================================
-FORMAT RUPIAH
-==================================
-*/
+/* =========================
+   FORMAT RUPIAH
+========================= */
 
 function formatRupiah(angka){
 
@@ -127,11 +189,9 @@ function formatRupiah(angka){
 
 }
 
-/*
-==================================
-LOAD BULAN
-==================================
-*/
+/* =========================
+   LOAD BULAN
+========================= */
 
 function loadBulan(){
 
@@ -158,7 +218,7 @@ function loadBulan(){
 
         select.innerHTML += `
         <option value="${bln}">
-        ${bln}
+            ${bln}
         </option>
         `;
 
@@ -166,11 +226,9 @@ function loadBulan(){
 
 }
 
-/*
-==================================
-FILTER DATA
-==================================
-*/
+/* =========================
+   FILTER DATA
+========================= */
 
 function getDataFilter(){
 
@@ -183,17 +241,50 @@ function getDataFilter(){
 
     }
 
-    return transaksi.filter(item =>
+    return transaksi.filter(item=>
         item.tanggal.substring(0,7)===bulan
     );
 
 }
 
-/*
-==================================
-TABEL RINGKASAN
-==================================
-*/
+/* =========================
+   SUMMARY
+========================= */
+
+function renderSummary(){
+
+    const data = getDataFilter();
+
+    let masuk = 0;
+    let keluar = 0;
+
+    data.forEach(item=>{
+
+        if(
+            item.jenis &&
+            item.jenis.toLowerCase()==="masuk"
+        ){
+            masuk += Number(item.nominal);
+        }else{
+            keluar += Number(item.nominal);
+        }
+
+    });
+
+    document.getElementById("totalMasuk")
+        .innerText = formatRupiah(masuk);
+
+    document.getElementById("totalKeluar")
+        .innerText = formatRupiah(keluar);
+
+    document.getElementById("saldo")
+        .innerText = formatRupiah(masuk-keluar);
+
+}
+
+/* =========================
+   TABEL REKAP
+========================= */
 
 function renderTabel(){
 
@@ -208,7 +299,7 @@ function renderTabel(){
 
         if(!rekap[key]){
 
-            rekap[key]={
+            rekap[key] = {
                 jenis:item.jenis,
                 kategori:item.kategori,
                 total:0
@@ -216,26 +307,39 @@ function renderTabel(){
 
         }
 
-        rekap[key].total +=
-        Number(item.nominal);
+        rekap[key].total += Number(item.nominal);
 
     });
 
-    let html="";
+    let html = "";
 
-    Object.values(rekap)
-    .sort((a,b)=>b.total-a.total)
-    .forEach(item=>{
+    if(Object.keys(rekap).length===0){
 
-        html += `
+        html = `
         <tr>
-            <td>${item.jenis}</td>
-            <td>${item.kategori}</td>
-            <td>${formatRupiah(item.total)}</td>
+            <td colspan="3" style="text-align:center">
+                Tidak ada data transaksi
+            </td>
         </tr>
         `;
 
-    });
+    }else{
+
+        Object.values(rekap)
+        .sort((a,b)=>b.total-a.total)
+        .forEach(item=>{
+
+            html += `
+            <tr>
+                <td>${item.jenis}</td>
+                <td>${item.kategori}</td>
+                <td>${formatRupiah(item.total)}</td>
+            </tr>
+            `;
+
+        });
+
+    }
 
     document.getElementById(
         "laporanKategori"
@@ -243,11 +347,9 @@ function renderTabel(){
 
 }
 
-/*
-==================================
-GRAFIK BATANG
-==================================
-*/
+/* =========================
+   GRAFIK BATANG
+========================= */
 
 function renderChart(){
 
@@ -257,14 +359,20 @@ function renderChart(){
 
     data.forEach(item=>{
 
-        if(!kategoriMap[item.kategori]){
+        if(
+            item.jenis &&
+            item.jenis.toLowerCase()==="keluar"
+        ){
 
-            kategoriMap[item.kategori]=0;
+            if(!kategoriMap[item.kategori]){
 
+                kategoriMap[item.kategori]=0;
+
+            }
+
+            kategoriMap[item.kategori] +=
+            Number(item.nominal);
         }
-
-        kategoriMap[item.kategori] +=
-        Number(item.nominal);
 
     });
 
@@ -295,18 +403,11 @@ function renderChart(){
 
             datasets:[{
 
-                label:"Total Nominal",
+                label:"Total Pengeluaran",
 
                 data:values,
 
-                backgroundColor:[
-                    "#22c55e",
-                    "#3b82f6",
-                    "#f59e0b",
-                    "#ef4444",
-                    "#8b5cf6",
-                    "#14b8a6"
-                ]
+                backgroundColor:"#22c55e"
 
             }]
 
@@ -325,9 +426,13 @@ function renderChart(){
             scales:{
 
                 y:{
-
-                    beginAtZero:true
-
+                    beginAtZero:true,
+                    ticks:{
+                        callback:function(value){
+                            return "Rp " +
+                            value.toLocaleString("id-ID");
+                        }
+                    }
                 }
 
             }
@@ -338,32 +443,28 @@ function renderChart(){
 
 }
 
-/*
-==================================
-FILTER CHANGE
-==================================
-*/
+/* =========================
+   EVENT FILTER
+========================= */
 
 document
 .getElementById("filterBulan")
 .addEventListener("change",()=>{
 
+    renderSummary();
     renderTabel();
-
     renderChart();
 
 });
 
-/*
-==================================
-LOAD AWAL
-==================================
-*/
+/* =========================
+   LOAD AWAL
+========================= */
 
 loadBulan();
 
+renderSummary();
 renderTabel();
-
 renderChart();
 
 </script>

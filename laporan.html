@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Laporan Keuangan</title>
 
@@ -23,7 +23,7 @@ font-family:Arial,sans-serif;
 body{
 background:#f0fdf4;
 padding:15px;
-padding-bottom:90px;
+padding-bottom:100px;
 }
 
 .container{
@@ -41,7 +41,7 @@ color:#16a34a;
 }
 
 .card{
-background:#fff;
+background:white;
 padding:15px;
 margin-bottom:15px;
 border-radius:15px;
@@ -51,11 +51,11 @@ box-shadow:0 2px 8px rgba(0,0,0,.1);
 .filter{
 width:100%;
 padding:10px;
-border:1px solid #ddd;
 border-radius:10px;
+border:1px solid #ddd;
 }
 
-.summary{
+.grid{
 display:grid;
 grid-template-columns:repeat(3,1fr);
 gap:10px;
@@ -64,8 +64,8 @@ gap:10px;
 .box{
 padding:15px;
 border-radius:12px;
-text-align:center;
 color:white;
+text-align:center;
 }
 
 .masuk{
@@ -80,8 +80,10 @@ background:#dc2626;
 background:#16a34a;
 }
 
-.box h3{
-margin-top:8px;
+.box p{
+margin-top:10px;
+font-size:22px;
+font-weight:bold;
 }
 
 table{
@@ -97,7 +99,7 @@ padding:10px;
 
 td{
 padding:10px;
-border-bottom:1px solid #ddd;
+border-bottom:1px solid #eee;
 }
 
 .bottom-nav{
@@ -106,10 +108,11 @@ left:0;
 right:0;
 bottom:0;
 background:#fff;
+box-shadow:0 -2px 10px rgba(0,0,0,.1);
 display:flex;
 justify-content:space-around;
 padding:10px;
-box-shadow:0 -2px 10px rgba(0,0,0,.1);
+z-index:9999;
 }
 
 .bottom-nav a{
@@ -120,13 +123,17 @@ text-align:center;
 }
 
 .active{
-color:#16a34a !important;
+color:#16a34a!important;
 font-weight:bold;
+}
+
+canvas{
+max-height:350px;
 }
 
 @media(max-width:600px){
 
-.summary{
+.grid{
 grid-template-columns:1fr;
 }
 
@@ -134,41 +141,42 @@ grid-template-columns:1fr;
 
 </style>
 </head>
+
 <body>
 
 <div class="container">
 
 <div class="header">
 <h1>📊 Laporan Keuangan</h1>
-<p>Analisa Pemasukan dan Pengeluaran</p>
+<p>Rekapitulasi Pemasukan dan Pengeluaran</p>
 </div>
 
 <div class="card">
 
-<h3>📅 Filter Bulan</h3>
+<h3>📅 Filter Periode</h3>
 <br>
 
-<input type="month"
-id="filterBulan"
-class="filter">
+<select id="filterBulan" class="filter">
+<option value="all">Semua Transaksi</option>
+</select>
 
 </div>
 
-<div class="summary">
+<div class="grid">
 
 <div class="box masuk">
-<div>Pemasukan</div>
-<h3 id="totalMasuk">Rp 0</h3>
+<div>Total Pemasukan</div>
+<p id="totalMasuk">Rp 0</p>
 </div>
 
 <div class="box keluar">
-<div>Pengeluaran</div>
-<h3 id="totalKeluar">Rp 0</h3>
+<div>Total Pengeluaran</div>
+<p id="totalKeluar">Rp 0</p>
 </div>
 
 <div class="box saldo">
 <div>Saldo</div>
-<h3 id="saldo">Rp 0</h3>
+<p id="saldo">Rp 0</p>
 </div>
 
 </div>
@@ -177,8 +185,7 @@ class="filter">
 
 <div class="card">
 
-<h3>📈 Grafik Pengeluaran per Kategori</h3>
-
+<h3>📈 Pengeluaran per Kategori</h3>
 <br>
 
 <canvas id="barChart"></canvas>
@@ -188,22 +195,20 @@ class="filter">
 <div class="card">
 
 <h3>📋 Ringkasan Kategori</h3>
-
 <br>
 
 <table>
 
 <thead>
-
 <tr>
 <th>Jenis</th>
 <th>Kategori</th>
 <th>Total</th>
 </tr>
-
 </thead>
 
-<tbody id="laporanBody"></tbody>
+<tbody id="laporanBody">
+</tbody>
 
 </table>
 
@@ -239,23 +244,56 @@ const API_URL =
 let chart = null;
 
 function rupiah(n){
-
 return "Rp " +
-Number(n || 0)
-.toLocaleString("id-ID");
+Number(n||0).toLocaleString('id-ID');
+}
+
+function loadFilter(data){
+
+const bulanSet = new Set();
+
+data.forEach(item=>{
+
+if(item.tanggal){
+
+bulanSet.add(
+item.tanggal.substring(0,7)
+);
 
 }
 
-function setDefaultMonth(){
+});
 
-const now = new Date();
+const select =
+document.getElementById("filterBulan");
 
-document.getElementById("filterBulan").value =
-`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+const currentValue =
+select.value;
+
+select.innerHTML =
+'<option value="all">Semua Transaksi</option>';
+
+[...bulanSet]
+.sort()
+.reverse()
+.forEach(bln=>{
+
+select.innerHTML +=
+`<option value="${bln}">
+${bln}
+</option>`;
+
+});
+
+if(currentValue){
+select.value=currentValue;
+}
 
 }
 
 async function loadLaporan(){
+
+try{
 
 const response =
 await fetch(API_URL);
@@ -263,32 +301,38 @@ await fetch(API_URL);
 const data =
 await response.json();
 
-const bulan =
-document.getElementById("filterBulan").value;
+loadFilter(data);
 
-const filtered =
-data.filter(item=>{
+const filter =
+document
+.getElementById("filterBulan")
+.value;
 
-if(!bulan) return true;
+let filtered = data;
 
-return item.tanggal &&
-item.tanggal.startsWith(bulan);
+if(filter !== "all"){
 
-});
+filtered =
+data.filter(item=>
+item.tanggal &&
+item.tanggal.startsWith(filter)
+);
+
+}
 
 let masuk = 0;
 let keluar = 0;
 
 const kategoriMap = {};
-const rekapKategori = {};
+const rekap = {};
 
 filtered.forEach(item=>{
 
 const nominal =
-Number(item.nominal || 0);
+Number(item.nominal||0);
 
 const jenis =
-(item.jenis || "")
+String(item.jenis||"")
 .toLowerCase();
 
 if(
@@ -312,11 +356,13 @@ kategoriMap[kategori] =
 }
 
 const key =
-`${item.jenis}|${item.kategori}`;
+(item.jenis||"") +
+"|" +
+(item.kategori||"");
 
-if(!rekapKategori[key]){
+if(!rekap[key]){
 
-rekapKategori[key]={
+rekap[key]={
 jenis:item.jenis,
 kategori:item.kategori,
 total:0
@@ -324,44 +370,39 @@ total:0
 
 }
 
-rekapKategori[key].total += nominal;
+rekap[key].total += nominal;
 
 });
 
-document.getElementById("totalMasuk").innerText =
-rupiah(masuk);
+document.getElementById("totalMasuk")
+.innerText = rupiah(masuk);
 
-document.getElementById("totalKeluar").innerText =
-rupiah(keluar);
+document.getElementById("totalKeluar")
+.innerText = rupiah(keluar);
 
-document.getElementById("saldo").innerText =
-rupiah(masuk-keluar);
-
-const labels =
-Object.keys(kategoriMap);
-
-const values =
-Object.values(kategoriMap);
+document.getElementById("saldo")
+.innerText = rupiah(masuk-keluar);
 
 if(chart){
-
 chart.destroy();
-
 }
 
-chart =
-new Chart(
+chart = new Chart(
+
 document.getElementById("barChart"),
+
 {
-type:"bar",
+type:'bar',
+
 data:{
-labels:labels,
+labels:Object.keys(kategoriMap),
 datasets:[{
-label:"Pengeluaran",
-data:values,
-backgroundColor:"#16a34a"
+label:'Pengeluaran',
+data:Object.values(kategoriMap),
+backgroundColor:'#16a34a'
 }]
 },
+
 options:{
 responsive:true,
 plugins:{
@@ -370,35 +411,47 @@ display:false
 }
 }
 }
-}
-);
 
-let html = "";
+});
 
-Object.values(rekapKategori)
+let html = '';
+
+Object.values(rekap)
 .sort((a,b)=>b.total-a.total)
 .forEach(item=>{
 
 html += `
 <tr>
-<td>${item.jenis}</td>
-<td>${item.kategori}</td>
+<td>${item.jenis||'-'}</td>
+<td>${item.kategori||'-'}</td>
 <td>${rupiah(item.total)}</td>
 </tr>
 `;
 
 });
 
-document.getElementById("laporanBody")
-.innerHTML =
-html ||
-`
+if(html===''){
+
+html = `
 <tr>
-<td colspan="3">
+<td colspan="3"
+style="text-align:center">
 Tidak ada data
 </td>
 </tr>
 `;
+
+}
+
+document
+.getElementById("laporanBody")
+.innerHTML = html;
+
+}catch(error){
+
+console.error(error);
+
+}
 
 }
 
@@ -409,7 +462,6 @@ document
 loadLaporan
 );
 
-setDefaultMonth();
 loadLaporan();
 
 </script>
